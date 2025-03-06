@@ -34,7 +34,17 @@ export default function DesktopPage() {
 
   const moveCursor = (x: number, y: number) => {
     if (cursorRef.current) {
-      cursorRef.current.style.transform = `translate(${x * 5}px, ${-y * 5}px)`;
+      const currentTransform = cursorRef.current.style.transform.match(
+        /translate\((-?\d+)px, (-?\d+)px\)/
+      );
+      const currentX = currentTransform ? parseInt(currentTransform[1]) : 0;
+      const currentY = currentTransform ? parseInt(currentTransform[2]) : 0;
+
+      // Adjust sensitivity
+      const newX = currentX + x * 5;
+      const newY = currentY - y * 5;
+
+      cursorRef.current.style.transform = `translate(${newX}px, ${newY}px)`;
     }
   };
 

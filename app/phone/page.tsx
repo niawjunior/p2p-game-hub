@@ -2,52 +2,75 @@
 import { useEffect, useState } from "react";
 import Peer from "peerjs";
 
+interface DeviceOrientationEventiOS extends DeviceOrientationEvent {
+  requestPermission?: () => Promise<"granted" | "denied">;
+}
+
 export default function PhonePage() {
   const [peer, setPeer] = useState<Peer | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
   const [conn, setConn] = useState<any>(null);
   const [peerId, setPeerId] = useState<string | null>(null);
   const [peerIdFromUrl, setPeerIdFromUrl] = useState<string | null>(null);
-  const [isReady, setIsReady] = useState(false); // Track when Peer ID is ready
-  const [isConnected, setIsConnected] = useState(false); // Track connection state
+  const [isReady, setIsReady] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    // Extract Peer ID from URL manually
     const urlParams = new URLSearchParams(window.location.search);
     setPeerIdFromUrl(urlParams.get("peerId"));
 
-    // Initialize PeerJS instance
     const newPeer = new Peer();
     setPeer(newPeer);
 
     newPeer.on("open", (id) => {
       setPeerId(id);
       console.log("✅ Phone Peer ID:", id);
-      setIsReady(true); // Now the phone is ready to connect
+      setIsReady(true);
     });
 
     return () => {
-      newPeer.destroy(); // Cleanup on unmount
+      newPeer.destroy();
     };
   }, []);
 
-  const handleConnect = () => {
+  const requestMotionPermission = async () => {
+    const requestPermission = (
+      DeviceOrientationEvent as unknown as DeviceOrientationEventiOS
+    ).requestPermission;
+
+    if (requestPermission) {
+      const permission = await requestPermission();
+      if (permission !== "granted") {
+        alert("Motion permission denied. Please enable motion access.");
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleConnect = async () => {
     if (peer && peerIdFromUrl) {
       console.log("🔗 Connecting to:", peerIdFromUrl);
       const connection = peer.connect(peerIdFromUrl);
 
-      connection.on("open", () => {
+      connection.on("open", async () => {
         console.log("✅ Connected!");
         setConn(connection);
-        setIsConnected(true); // Mark as connected
+        setIsConnected(true);
+
+        // Request motion permissions (needed for iOS)
+        const permissionGranted = await requestMotionPermission();
+        if (!permissionGranted) return;
 
         // Start sending motion data
         window.addEventListener("devicemotion", (event) => {
           const { accelerationIncludingGravity } = event;
-          connection.send({
-            x: accelerationIncludingGravity?.x,
-            y: accelerationIncludingGravity?.y,
-          });
+          if (connection.open) {
+            connection.send({
+              x: accelerationIncludingGravity?.x || 0,
+              y: accelerationIncludingGravity?.y || 0,
+            });
+          }
         });
       });
     }
