@@ -1,18 +1,13 @@
-import { NextApiRequest, NextApiResponse } from "next";
 import { Server } from "socket.io";
 import { mouse, Point } from "@nut-tree-fork/nut-js";
-
-// Disable Edge runtime (WebSockets need Node.js runtime)
-export const runtime = "nodejs";
 
 // Store the WebSocket server globally to persist between requests
 const globalForSocket = global as unknown as { io?: Server };
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export const GET = async () => {
   if (!globalForSocket.io) {
     console.log("🔌 Initializing WebSocket server...");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const io = new Server(res.socket as any, {
+    const io = new Server({
       cors: { origin: "*" },
     });
 
@@ -37,5 +32,5 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     console.log("🟢 WebSocket server already running.");
   }
 
-  res.end();
-}
+  return new Response("WebSocket server is running");
+};
