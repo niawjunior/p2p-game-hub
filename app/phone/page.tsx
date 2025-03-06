@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Peer from "peerjs";
 
@@ -29,13 +29,15 @@ export default function PhonePage() {
   }, [peer, peerIdFromUrl]);
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-black text-white">
-      <h1 className="text-2xl">Phone Controller</h1>
-      {conn ? (
-        <p className="text-green-500">✅ Connected!</p>
-      ) : (
-        <p>Waiting for connection...</p>
-      )}
-    </div>
+    <Suspense>
+      <div className="flex flex-col items-center justify-center h-screen bg-black text-white">
+        <h1 className="text-2xl">Phone Controller</h1>
+        {conn ? (
+          <p className="text-green-500">✅ Connected!</p>
+        ) : (
+          <p>Waiting for connection...</p>
+        )}
+      </div>
+    </Suspense>
   );
 }
