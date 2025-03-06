@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 
-const socket = io("https://remote-desktop-three.vercel.app");
+const socket = io("https://remote-desktop-three.vercel.app/api/socket");
 
 export default function DesktopPage() {
   const [motion, setMotion] = useState({ x: 0, y: 0 });

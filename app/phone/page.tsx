@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { io } from "socket.io-client";
 
-const socket = io("https://remote-desktop-three.vercel.app");
+const socket = io("https://remote-desktop-three.vercel.app/api/socket");
 
 export default function PhonePage() {
   useEffect(() => {
