@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Peer from "peerjs";
 import { QRCodeSVG } from "qrcode.react";
 
@@ -7,7 +7,6 @@ export default function DesktopPage() {
   const [peer, setPeer] = useState<Peer | null>(null);
   const [peerId, setPeerId] = useState("");
   const [isConnected, setIsConnected] = useState(false);
-  const cursorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!peer) {
@@ -21,61 +20,60 @@ export default function DesktopPage() {
 
       newPeer.on("connection", (conn) => {
         console.log("🔗 Connected to Phone!");
-        setIsConnected(true); // Hide QR Code
+        setIsConnected(true);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         conn.on("data", (data: any) => {
-          console.log("📡 Motion Data:", data);
-          moveCursor(data.x, data.y);
+          console.log("📡 Gesture Received:", data);
+
+          switch (data.gesture) {
+            case "tap":
+              console.log("🖱 Click Action");
+              alert("Click Action Triggered!");
+              break;
+            case "longpress":
+              console.log("🖱 Right Click Action");
+              alert("Right Click Action Triggered!");
+              break;
+            case "swipeLeft":
+              console.log("⬅️ Swipe Left → Previous Page");
+              window.history.back();
+              break;
+            case "swipeRight":
+              console.log("➡️ Swipe Right → Next Page");
+              window.history.forward();
+              break;
+            case "swipeUp":
+              console.log("⬆️ Scroll Up");
+              window.scrollBy(0, -100);
+              break;
+            case "swipeDown":
+              console.log("⬇️ Scroll Down");
+              window.scrollBy(0, 100);
+              break;
+            default:
+              console.log("❓ Unknown Gesture");
+          }
         });
       });
     }
   }, [peer]);
 
-  const moveCursor = (x: number, y: number) => {
-    if (cursorRef.current) {
-      const currentTransform = cursorRef.current.style.transform.match(
-        /translate\((-?\d+)px, (-?\d+)px\)/
-      );
-      const currentX = currentTransform ? parseInt(currentTransform[1]) : 0;
-      const currentY = currentTransform ? parseInt(currentTransform[2]) : 0;
-
-      // Adjust sensitivity
-      const newX = currentX + x * 5;
-      const newY = currentY - y * 5;
-
-      cursorRef.current.style.transform = `translate(${newX}px, ${newY}px)`;
-    }
-  };
-
   return (
-    <div className="relative flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
       {!isConnected ? (
         <>
           <h1 className="text-2xl">Scan QR Code to Connect</h1>
           {peerId && (
-            <>
-              <QRCodeSVG
-                value={`https://remote-desktop-three.vercel.app/phone?peerId=${peerId}`}
-                size={200}
-                className="mt-4"
-              />
-              <p className="mt-4">Or enter this ID manually:</p>
-              <p className="text-lg font-bold">{peerId}</p>
-            </>
+            <QRCodeSVG
+              value={`https://your-vercel-app.vercel.app/phone?peerId=${peerId}`}
+              size={200}
+            />
           )}
         </>
       ) : (
         <>
-          <h1 className="text-2xl">
-            Connected! Move your phone to control the cursor.
-          </h1>
-          {/* Virtual cursor */}
-          <div
-            ref={cursorRef}
-            className="absolute w-6 h-6 bg-red-500 rounded-full transition-transform duration-50"
-            style={{ top: "50%", left: "50%" }}
-          />
+          <h1 className="text-2xl">Connected! Use gestures.</h1>
         </>
       )}
     </div>
