@@ -40,7 +40,7 @@ export default function PhonePage() {
 
     if (requestPermission) {
       const permission = await requestPermission();
-      if (permission !== "granted") {
+      if (permission === "denied") {
         alert("Motion permission denied. Please enable motion access.");
         return false;
       }
