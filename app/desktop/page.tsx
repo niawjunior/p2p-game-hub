@@ -66,7 +66,7 @@ export default function DesktopPage() {
           <h1 className="text-2xl">Scan QR Code to Connect</h1>
           {peerId && (
             <QRCodeSVG
-              value={`https://your-vercel-app.vercel.app/phone?peerId=${peerId}`}
+              value={`https://remote-desktop-three.vercel.app/phone?peerId=${peerId}`}
               size={200}
             />
           )}
