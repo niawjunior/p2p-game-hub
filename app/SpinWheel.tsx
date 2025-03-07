@@ -8,7 +8,7 @@ interface SpinWheelProps {
   spinTime: number; // Dynamic spin time
   spinCount: number; // Number of spins before stopping
   startSpin: boolean; // Trigger spinning
-  onFinished: (winner: string) => void; // Callback when spin stops
+  onFinished: (winner: string, isHost: boolean) => void; // Callback when spin stops
 }
 
 export default function SpinWheel({
@@ -27,11 +27,11 @@ export default function SpinWheel({
 
   useEffect(() => {
     if (startSpin && !isSpinning) {
-      spinWheel();
+      spinWheel(false);
     }
   }, [startSpin]);
 
-  const spinWheel = () => {
+  const spinWheel = (isHost: boolean) => {
     console.log("Spinning...");
     if (isSpinning) return;
     setIsSpinning(true);
@@ -68,7 +68,7 @@ export default function SpinWheel({
         }
 
         console.log("Calculated Index:", calIndex);
-        onFinished(segments[calIndex]);
+        onFinished(segments[calIndex], isHost);
 
         // ✅ Store the new stopping angle
         setCurrentAngle(finalAngle);
@@ -134,7 +134,7 @@ export default function SpinWheel({
 
       <button
         className="mt-6 absolute bottom-[-60px] bg-blue-500 hover:bg-blue-600 transition cursor-pointer text-white font-semibold rounded-lg px-6 py-2"
-        onClick={spinWheel}
+        onClick={() => spinWheel(true)}
       >
         Spin
       </button>

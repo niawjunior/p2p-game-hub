@@ -140,7 +140,7 @@ export default function DesktopPage() {
       setConnectedPhones((prevPhones) =>
         prevPhones.filter((conn) => {
           const lastPing = phoneHeartbeats.current[conn.peer] || 0;
-          const isAlive = now - lastPing < 15000; // Increase timeout to 15s
+          const isAlive = now - lastPing < 20000; // Increase timeout to 20s
           if (!isAlive)
             console.warn(`❌ Removing inactive phone: ${conn.peer}`);
           return isAlive;
@@ -150,7 +150,7 @@ export default function DesktopPage() {
       setPhoneIds((prevIds) =>
         prevIds.filter((id) => {
           const lastPing = phoneHeartbeats.current[id] || 0;
-          return now - lastPing < 15000; // Ensure IDs are only removed if actually inactive
+          return now - lastPing < 20000; // Ensure IDs are only removed if actually inactive
         })
       );
     };
@@ -163,8 +163,6 @@ export default function DesktopPage() {
     console.log("peerId", peerId);
     if (peerId) {
       setCurrentSpinner(peerId); // Store the peer ID of the phone that triggered the spin
-    } else {
-      setCurrentSpinner("host"); // Host (desktop) started the spin
     }
 
     console.log("Force:", force);
@@ -179,11 +177,11 @@ export default function DesktopPage() {
     });
   };
 
-  const handleSpinCompleted = (option: string) => {
+  const handleSpinCompleted = (option: string, isHost: boolean) => {
     setSelectedChallenge(option);
     setStartSpin(false);
     console.log("currentSpinner", currentSpinner);
-    if (currentSpinner === "host") {
+    if (isHost) {
       // If the desktop triggered the spin, send the result to all phones
       connectedPhones.forEach((conn) => {
         if (conn.open) {
