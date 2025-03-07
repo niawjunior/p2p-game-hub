@@ -22,6 +22,7 @@ export default function SpinWheel({
   const wheelContainerRef = useRef<HTMLDivElement | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentAngle, setCurrentAngle] = useState(0);
+  const wheelSize = 300; // Set wheel size
 
   useEffect(() => {
     if (startSpin && !isSpinning) {
@@ -72,8 +73,8 @@ export default function SpinWheel({
       {/* Wheel Container (Spins) */}
       <div ref={wheelContainerRef} className="relative">
         <svg
-          width="300"
-          height="300"
+          width={wheelSize}
+          height={wheelSize}
           viewBox="0 0 300 300"
           className="rounded-full"
         >
@@ -81,10 +82,15 @@ export default function SpinWheel({
             {segments.map((segment, index) => {
               const startAngle = (index * 360) / segments.length;
               const endAngle = ((index + 1) * 360) / segments.length;
+              const midAngle = (startAngle + endAngle) / 2; // Midpoint of slice
+
               const x1 = 150 * Math.cos((startAngle * Math.PI) / 180);
               const y1 = 150 * Math.sin((startAngle * Math.PI) / 180);
               const x2 = 150 * Math.cos((endAngle * Math.PI) / 180);
               const y2 = 150 * Math.sin((endAngle * Math.PI) / 180);
+
+              const textX = 90 * Math.cos((midAngle * Math.PI) / 180);
+              const textY = 90 * Math.sin((midAngle * Math.PI) / 180);
 
               return (
                 <g key={index}>
@@ -96,19 +102,13 @@ export default function SpinWheel({
                   />
                   {/* Segment Text */}
                   <text
-                    x={
-                      75 *
-                      Math.cos(((startAngle + endAngle) / 2) * (Math.PI / 180))
-                    }
-                    y={
-                      75 *
-                      Math.sin(((startAngle + endAngle) / 2) * (Math.PI / 180))
-                    }
+                    x={textX}
+                    y={textY}
                     fill="white"
+                    fontSize="12"
                     fontFamily="Kanit"
-                    fontSize="14"
                     textAnchor="middle"
-                    transform={`rotate(${(startAngle + endAngle) / 2}, 0, 0)`}
+                    transform={`rotate(${midAngle + 180}, ${textX}, ${textY})`} // Rotate properly
                   >
                     {segments[index]}
                   </text>
