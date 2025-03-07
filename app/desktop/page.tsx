@@ -2,49 +2,49 @@
 import { useEffect, useState } from "react";
 import Peer from "peerjs";
 import { QRCodeSVG } from "qrcode.react";
-import { SpinWheel, Option } from "react-prize-wheel";
+import { SpinWheel } from "spin-wheel-game";
 
 // Define challenges as options
-const challenges: Option[] = [
+const challenges = [
   {
-    text: "ดื่ม 2 ช็อต 🍻",
-    styles: { backgroundColor: "#ff4757", textColor: "#ffffff" },
+    segmentText: "ดื่ม 2 ช็อต 🍻",
+    seqColor: "#ff4757",
   },
   {
-    text: "หมุนอีกครั้ง!",
-    styles: { backgroundColor: "#1e90ff", textColor: "#ffffff" },
+    segmentText: "หมุนอีกครั้ง!",
+    seqColor: "#1e90ff",
   },
   {
-    text: "เลือกคนอื่นให้ดื่ม 🍷",
-    styles: { backgroundColor: "#2ed573", textColor: "#ffffff" },
+    segmentText: "เลือกคนอื่นให้ดื่ม 🍷",
+    seqColor: "#2ed573",
   },
   {
-    text: "วิดพื้น 10 ครั้ง 💪",
-    styles: { backgroundColor: "#ffa502", textColor: "#ffffff" },
+    segmentText: "วิดพื้น 10 ครั้ง 💪",
+    seqColor: "#ffa502",
   },
   {
-    text: "เล่าเรื่องตลก 🎤",
-    styles: { backgroundColor: "#ff6b81", textColor: "#ffffff" },
+    segmentText: "เล่าเรื่องตลก 🎤",
+    seqColor: "#ff6b81",
   },
   {
-    text: "ดื่มโดยไม่ใช้มือ! 🙌",
-    styles: { backgroundColor: "#3742fa", textColor: "#ffffff" },
+    segmentText: "ดื่มโดยไม่ใช้มือ! 🙌",
+    seqColor: "#3742fa",
   },
   {
-    text: "ทำหน้าตลก 30 วินาที 😜",
-    styles: { backgroundColor: "#70a1ff", textColor: "#ffffff" },
+    segmentText: "ทำหน้าตลก 30 วินาที 😜",
+    seqColor: "#70a1ff",
   },
   {
-    text: "ทุกคนต้องดื่ม 🌊",
-    styles: { backgroundColor: "#7bed9f", textColor: "#ffffff" },
+    segmentText: "ทุกคนต้องดื่ม 🌊",
+    seqColor: "#7bed9f",
   },
   {
-    text: "สลับเสื้อกับใครสักคน 👕",
-    styles: { backgroundColor: "#5352ed", textColor: "#ffffff" },
+    segmentText: "สลับเสื้อกับใครสักคน 👕",
+    seqColor: "#5352ed",
   },
   {
-    text: "หมุนอีกครั้งและดื่ม 2 เท่า! 🔄",
-    styles: { backgroundColor: "#eccc68", textColor: "#ffffff" },
+    segmentText: "หมุนอีกครั้งและดื่ม 2 เท่า! 🔄",
+    seqColor: "#eccc68",
   },
 ];
 
@@ -57,6 +57,7 @@ export default function DesktopPage() {
   );
   const [startSpin, setStartSpin] = useState(false);
   const [spinTime, setSpinTime] = useState(5000); // Default spin time
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [spinCount, setSpinCount] = useState(10); // Default number of spins
 
   useEffect(() => {
@@ -90,11 +91,11 @@ export default function DesktopPage() {
     setSpinCount(5 + Math.floor(force * 3)); // More force = more spins
     setStartSpin(true);
   };
-  const handleSpinCompleted = (option: Option) => {
-    console.log("🎯 Winning Segment from Wheel:", option.text);
+  const handleSpinCompleted = (text: string) => {
+    console.log("🎯 Winning Segment from Wheel:", text);
 
     // Find the correct challenge from the stored prizeNumber
-    setSelectedChallenge(option.text); // Set the correct challenge
+    setSelectedChallenge(text); // Set the correct challenge
 
     setStartSpin(false);
   };
@@ -124,14 +125,19 @@ export default function DesktopPage() {
 
               {/* Realistic Spin Wheel */}
               <SpinWheel
-                options={challenges}
-                startSpin={startSpin}
-                spinTime={spinTime}
-                spinCount={spinCount}
-                styles={{
-                  size: 300,
-                }}
-                onSpinCompleted={handleSpinCompleted}
+                segments={challenges}
+                onFinished={handleSpinCompleted}
+                primaryColor="black"
+                contrastColor="white"
+                buttonText="Spin"
+                isOnlyOnce={false}
+                size={290}
+                upDuration={spinTime / 10} // Adjust based on dynamic spin time
+                downDuration={spinTime} // Matches calculated spin time
+                fontFamily="Arial"
+                arrowLocation="top"
+                showTextOnSpin={true}
+                isSpinSound={true}
               />
 
               <h2 className="mt-6 text-2xl">
