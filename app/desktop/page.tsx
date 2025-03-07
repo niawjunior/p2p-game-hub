@@ -190,7 +190,7 @@ export default function DesktopPage() {
           <div>
             <h1 className="text-xl mb-6">🍻 Drunk Challenge Game 🎉</h1>
 
-            {!isConnected && gameStarted && (
+            {!isConnected && !gameStarted && (
               <>
                 {/* Editable Challenge List */}
                 <div className="mb-4 mt-4 px-4">
