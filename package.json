@@ -17,6 +17,7 @@
     "react": "^19.0.0",
     "react-custom-roulette": "^1.4.1",
     "react-dom": "^19.0.0",
+    "react-prize-wheel": "^1.1.3",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1"
   },

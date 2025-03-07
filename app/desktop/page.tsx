@@ -2,32 +2,50 @@
 import { useEffect, useState } from "react";
 import Peer from "peerjs";
 import { QRCodeSVG } from "qrcode.react";
-import { Wheel } from "react-custom-roulette";
+import { SpinWheel, Option } from "react-prize-wheel";
 
-const challenges = [
-  { option: "Take 2 shots 🍻" },
-  { option: "Spin again!" },
-  { option: "Give a drink to someone 🍷" },
-  { option: "Do 10 pushups 💪" },
-  { option: "Tell a funny story 🎤" },
-  { option: "Drink with no hands! 🙌" },
-  { option: "Make a silly face for 30 sec 😜" },
-  { option: "Waterfall! Everyone drinks! 🌊" },
-  { option: "Switch shirts with someone 👕" },
-  { option: "Spin again & double! 🔄" },
-];
-
-const segmentColors = [
-  "#ff4757",
-  "#1e90ff",
-  "#2ed573",
-  "#ffa502",
-  "#ff6b81",
-  "#3742fa",
-  "#70a1ff",
-  "#7bed9f",
-  "#5352ed",
-  "#eccc68",
+// Define challenges as options
+const challenges: Option[] = [
+  {
+    text: "Take 2 shots 🍻",
+    styles: { backgroundColor: "#ff4757", textColor: "#ffffff" },
+  },
+  {
+    text: "Spin again!",
+    styles: { backgroundColor: "#1e90ff", textColor: "#ffffff" },
+  },
+  {
+    text: "Give a drink to someone 🍷",
+    styles: { backgroundColor: "#2ed573", textColor: "#ffffff" },
+  },
+  {
+    text: "Do 10 pushups 💪",
+    styles: { backgroundColor: "#ffa502", textColor: "#ffffff" },
+  },
+  {
+    text: "Tell a funny story 🎤",
+    styles: { backgroundColor: "#ff6b81", textColor: "#ffffff" },
+  },
+  {
+    text: "Drink with no hands! 🙌",
+    styles: { backgroundColor: "#3742fa", textColor: "#ffffff" },
+  },
+  {
+    text: "Make a silly face for 30 sec 😜",
+    styles: { backgroundColor: "#70a1ff", textColor: "#ffffff" },
+  },
+  {
+    text: "Waterfall! Everyone drinks! 🌊",
+    styles: { backgroundColor: "#7bed9f", textColor: "#ffffff" },
+  },
+  {
+    text: "Switch shirts with someone 👕",
+    styles: { backgroundColor: "#5352ed", textColor: "#ffffff" },
+  },
+  {
+    text: "Spin again & double! 🔄",
+    styles: { backgroundColor: "#eccc68", textColor: "#ffffff" },
+  },
 ];
 
 export default function DesktopPage() {
@@ -37,8 +55,9 @@ export default function DesktopPage() {
   const [selectedChallenge, setSelectedChallenge] = useState<string | null>(
     null
   );
-  const [mustSpin, setMustSpin] = useState(false);
-  const [prizeNumber, setPrizeNumber] = useState(0);
+  const [startSpin, setStartSpin] = useState(false);
+  const [spinTime, setSpinTime] = useState(5000); // Default spin time
+  const [spinCount, setSpinCount] = useState(10); // Default number of spins
 
   useEffect(() => {
     if (!peer) {
@@ -56,25 +75,24 @@ export default function DesktopPage() {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         conn.on("data", (data: any) => {
-          if (data.gesture === "swipe" && !mustSpin) {
-            const force = data.force || 1;
-            initiateSpin(force);
+          if (data.gesture === "swipe" && !startSpin) {
+            initiateSpin(data.force);
           }
         });
       });
     }
-  }, [peer, mustSpin]);
+  }, [peer, startSpin]);
 
   const initiateSpin = (force: number) => {
     console.log("Force:", force);
-    const newPrizeNumber = Math.floor(Math.random() * challenges.length);
-    setPrizeNumber(newPrizeNumber);
-    setMustSpin(true);
+    setSpinTime(3000 + force * 500); // Adjust spin time based on force
+    setSpinCount(5 + Math.floor(force * 3)); // More force = more spins
+    setStartSpin(true);
   };
 
-  const handleSpinStop = () => {
-    setMustSpin(false);
-    setSelectedChallenge(challenges[prizeNumber].option);
+  const handleSpinCompleted = (option: Option) => {
+    setSelectedChallenge(option.text);
+    setStartSpin(false);
   };
 
   return (
@@ -101,24 +119,12 @@ export default function DesktopPage() {
               <h1 className="text-3xl">🍻 Drunk Challenge Game 🎉</h1>
 
               {/* Realistic Spin Wheel */}
-              <Wheel
-                mustStartSpinning={mustSpin}
-                prizeNumber={prizeNumber}
-                data={challenges}
-                onStopSpinning={handleSpinStop}
-                backgroundColors={segmentColors}
-                textColors={["#ffffff"]}
-                outerBorderColor="black"
-                outerBorderWidth={5}
-                innerRadius={0}
-                innerBorderColor="black"
-                innerBorderWidth={0}
-                radiusLineColor="black"
-                radiusLineWidth={5}
-                fontSize={16}
-                perpendicularText={true}
-                textDistance={60}
-                spinDuration={0.5 + prizeNumber * 0.1} // Adjust spin duration based on prize number
+              <SpinWheel
+                options={challenges}
+                startSpin={startSpin}
+                spinTime={spinTime}
+                spinCount={spinCount}
+                onSpinCompleted={handleSpinCompleted}
               />
 
               <h2 className="mt-6 text-2xl">
