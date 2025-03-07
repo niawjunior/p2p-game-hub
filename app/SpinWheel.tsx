@@ -7,8 +7,8 @@ interface SpinWheelProps {
   colors: string[]; // Colors for each segment
   spinTime: number; // Dynamic spin time
   spinCount: number; // Dynamic number of spins
+  startSpin: boolean; // Trigger spinning
   onFinished: (winner: string) => void; // Callback when spin stops
-  startSpin: boolean; // New: Start spinning trigger
 }
 
 export default function SpinWheel({
@@ -16,10 +16,9 @@ export default function SpinWheel({
   colors,
   spinTime,
   spinCount,
-  onFinished,
   startSpin,
+  onFinished,
 }: SpinWheelProps) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wheelContainerRef = useRef<HTMLDivElement | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentAngle, setCurrentAngle] = useState(0);
@@ -28,14 +27,14 @@ export default function SpinWheel({
     if (startSpin && !isSpinning) {
       spinWheel();
     }
-  }, [startSpin]); // Watch for `startSpin` changes
+  }, [startSpin]); // Watches for `startSpin` changes
 
   const spinWheel = () => {
     if (isSpinning) return;
     setIsSpinning(true);
 
-    const totalRotation = spinCount * 360 + Math.random() * 360; // Add randomness
-    const finalAngle = (currentAngle + totalRotation) % 360; // Keep rotation within bounds
+    const totalRotation = spinCount * 360 + Math.random() * 360;
+    const finalAngle = (currentAngle + totalRotation) % 360;
 
     gsap.to(wheelContainerRef.current, {
       rotation: `+=${totalRotation}`,
@@ -44,10 +43,12 @@ export default function SpinWheel({
       onComplete: () => {
         setIsSpinning(false);
 
-        // Determine winning segment based on final angle
+        // 🏆 Determine winning segment (based on the fixed pointer at the top)
         const segmentSize = 360 / segments.length;
+        const pointerAngle = 0; // Pointer is always at 0°
         const winningIndex =
-          Math.floor((360 - (finalAngle % 360)) / segmentSize) %
+          (segments.length -
+            Math.floor((finalAngle + pointerAngle) / segmentSize)) %
           segments.length;
 
         console.log(
@@ -57,70 +58,51 @@ export default function SpinWheel({
           segments[winningIndex]
         );
 
-        // Callback with winning result
+        // Send winning result
         onFinished(segments[winningIndex]);
 
-        // Update current angle
+        // Store final rotation
         setCurrentAngle(finalAngle);
       },
     });
   };
 
-  useEffect(() => {
-    if (!canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const drawWheel = () => {
-      const radius = canvas.width / 2;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.font = "12px Kanit";
-      ctx.textAlign = "center";
-
-      segments.forEach((segment, index) => {
-        const startAngle = (index * 2 * Math.PI) / segments.length;
-        const endAngle = ((index + 1) * 2 * Math.PI) / segments.length;
-        ctx.beginPath();
-        ctx.moveTo(radius, radius);
-        ctx.arc(radius, radius, radius, startAngle, endAngle);
-        ctx.fillStyle = colors[index];
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.save();
-        ctx.translate(radius, radius);
-        ctx.rotate(startAngle + (endAngle - startAngle) / 2);
-        ctx.fillStyle = "white";
-        ctx.fillText(segment, radius / 1.5, 10);
-        ctx.restore();
-      });
-    };
-
-    drawWheel();
-  }, [segments, colors]);
-
   return (
     <div className="relative flex flex-col items-center">
       {/* Wheel Container (Spins) */}
       <div ref={wheelContainerRef} className="relative">
-        <canvas
-          ref={canvasRef}
-          width={300}
-          height={300}
+        <svg
+          width="300"
+          height="300"
+          viewBox="0 0 300 300"
           className="rounded-full"
-        />
+        >
+          <g transform="translate(150, 150)">
+            {segments.map((segment, index) => {
+              const startAngle = (index * 360) / segments.length;
+              const endAngle = ((index + 1) * 360) / segments.length;
+              const x1 = 150 * Math.cos((startAngle * Math.PI) / 180);
+              const y1 = 150 * Math.sin((startAngle * Math.PI) / 180);
+              const x2 = 150 * Math.cos((endAngle * Math.PI) / 180);
+              const y2 = 150 * Math.sin((endAngle * Math.PI) / 180);
+
+              return (
+                <path
+                  key={index}
+                  d={`M0,0 L${x1},${y1} A150,150 0 0,1 ${x2},${y2} Z`}
+                  fill={colors[index]}
+                  stroke="black"
+                />
+              );
+            })}
+          </g>
+        </svg>
       </div>
 
       {/* Fixed Red Pointer */}
       <div className="absolute top-0 flex justify-center items-center">
         <div className="w-0 h-0 border-l-8 border-r-8 border-b-16 border-transparent border-b-red-500"></div>
       </div>
-
-      {/* Hidden button to trigger spin externally */}
-      <button className="hidden" onClick={spinWheel} disabled={isSpinning}>
-        Spin (Hidden)
-      </button>
     </div>
   );
 }
