@@ -1,19 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Peer from "peerjs";
 
 export default function PhonePage() {
   const [peer, setPeer] = useState<Peer | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [conn, setConn] = useState<any>(null);
   const [peerId, setPeerId] = useState<string | null>(null);
   const [peerIdFromUrl, setPeerIdFromUrl] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
 
-  let touchStartX = 0;
   let touchStartY = 0;
-  let touchStartTime = 0;
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -46,56 +44,21 @@ export default function PhonePage() {
     }
   };
 
-  const handleTouchStart = useCallback((e: TouchEvent) => {
-    touchStartX = e.touches[0].clientX;
+  const handleTouchStart = (e: TouchEvent) => {
     touchStartY = e.touches[0].clientY;
-    touchStartTime = Date.now();
-  }, []);
+  };
 
-  const handleTouchEnd = useCallback(
-    (e: TouchEvent) => {
-      if (!conn || !conn.open) return;
+  const handleTouchEnd = (e: TouchEvent) => {
+    if (!conn || !conn.open) return;
 
-      const touchEndX = e.changedTouches[0].clientX;
-      const touchEndY = e.changedTouches[0].clientY;
-      const touchDuration = Date.now() - touchStartTime;
+    const touchEndY = e.changedTouches[0].clientY;
+    const deltaY = touchEndY - touchStartY;
 
-      const deltaX = touchEndX - touchStartX;
-      const deltaY = touchEndY - touchStartY;
-
-      // Detect Tap (Short Press)
-      if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
-        if (touchDuration < 300) {
-          console.log("🖱 Tap Detected");
-          conn.send({ gesture: "tap" });
-        } else {
-          console.log("🖱 Long Press Detected");
-          conn.send({ gesture: "longpress" });
-        }
-        return;
-      }
-
-      // Detect Swipe Gestures
-      if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        if (deltaX > 50) {
-          console.log("➡️ Swipe Right");
-          conn.send({ gesture: "swipeRight" });
-        } else if (deltaX < -50) {
-          console.log("⬅️ Swipe Left");
-          conn.send({ gesture: "swipeLeft" });
-        }
-      } else {
-        if (deltaY > 50) {
-          console.log("⬇️ Swipe Down");
-          conn.send({ gesture: "swipeDown" });
-        } else if (deltaY < -50) {
-          console.log("⬆️ Swipe Up");
-          conn.send({ gesture: "swipeUp" });
-        }
-      }
-    },
-    [conn, touchStartTime, touchStartX, touchStartY]
-  );
+    if (deltaY < -50) {
+      console.log("🎡 Swipe Detected! Spinning the wheel...");
+      conn.send({ gesture: "swipe" });
+    }
+  };
 
   useEffect(() => {
     document.addEventListener("touchstart", handleTouchStart);
@@ -104,17 +67,19 @@ export default function PhonePage() {
       document.removeEventListener("touchstart", handleTouchStart);
       document.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [conn, handleTouchEnd, handleTouchStart]);
+  }, [conn]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-black text-white">
-      <h1 className="text-2xl">Phone Controller</h1>
+      <h1 className="text-2xl">🍻 Drunk Challenge Game 🎉</h1>
 
       {peerId ? (
         <>
           <p className="mt-4">Your Peer ID: {peerId}</p>
           {isConnected ? (
-            <p className="text-green-500 mt-4">✅ Connected! Use gestures.</p>
+            <p className="text-green-500 mt-4">
+              ✅ Connected! Swipe up to spin!
+            </p>
           ) : isReady ? (
             <button
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"

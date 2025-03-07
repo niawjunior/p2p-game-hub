@@ -1,12 +1,27 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Peer from "peerjs";
 import { QRCodeSVG } from "qrcode.react";
+
+const challenges = [
+  "Take 2 shots 🍻",
+  "Spin again!",
+  "Give a drink to someone 🍷",
+  "Do 10 pushups 💪",
+  "Tell a funny story 🎤",
+  "Drink with no hands! 🙌",
+  "Make a silly face for 30 sec 😜",
+  "Waterfall! Everyone drinks! 🌊",
+  "Switch shirts with someone 👕",
+  "Spin again & double! 🔄",
+];
 
 export default function DesktopPage() {
   const [peer, setPeer] = useState<Peer | null>(null);
   const [peerId, setPeerId] = useState("");
   const [isConnected, setIsConnected] = useState(false);
+  const [currentChallenge, setCurrentChallenge] = useState<string | null>(null);
+  const wheelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!peer) {
@@ -24,56 +39,63 @@ export default function DesktopPage() {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         conn.on("data", (data: any) => {
-          console.log("📡 Gesture Received:", data);
-
-          switch (data.gesture) {
-            case "tap":
-              console.log("🖱 Click Action");
-              alert("Click Action Triggered!");
-              break;
-            case "longpress":
-              console.log("🖱 Right Click Action");
-              alert("Right Click Action Triggered!");
-              break;
-            case "swipeLeft":
-              console.log("⬅️ Swipe Left → Previous Page");
-              window.history.back();
-              break;
-            case "swipeRight":
-              console.log("➡️ Swipe Right → Next Page");
-              window.history.forward();
-              break;
-            case "swipeUp":
-              console.log("⬆️ Scroll Up");
-              window.scrollBy(0, -100);
-              break;
-            case "swipeDown":
-              console.log("⬇️ Scroll Down");
-              window.scrollBy(0, 100);
-              break;
-            default:
-              console.log("❓ Unknown Gesture");
+          if (data.gesture === "swipe") {
+            spinWheel();
           }
         });
       });
     }
   }, [peer]);
 
+  const spinWheel = () => {
+    if (wheelRef.current) {
+      const randomIndex = Math.floor(Math.random() * challenges.length);
+      setCurrentChallenge(challenges[randomIndex]);
+
+      wheelRef.current.style.transition = "transform 2s ease-out";
+      wheelRef.current.style.transform = `rotate(${
+        Math.random() * 360 + 720
+      }deg)`;
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
-      {!isConnected ? (
+      {peerId ? (
         <>
-          <h1 className="text-2xl">Scan QR Code to Connect</h1>
-          {peerId && (
-            <QRCodeSVG
-              value={`https://remote-desktop-three.vercel.app/phone?peerId=${peerId}`}
-              size={200}
-            />
+          {!isConnected ? (
+            <>
+              <h1 className="text-2xl">Scan QR Code to Join</h1>
+              {peerId && (
+                <>
+                  <QRCodeSVG
+                    value={`https://remote-desktop-three.vercel.app/phone?peerId=${peerId}`}
+                    size={200}
+                    className="mt-4"
+                  />
+                  <p className="mt-4">Or enter this ID manually:</p>
+                  <p className="text-lg font-bold">{peerId}</p>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <h1 className="text-3xl">🍻 Drunk Challenge Game 🎉</h1>
+              <div
+                ref={wheelRef}
+                className="mt-8 w-40 h-40 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-xl"
+              >
+                🎡 Spin Me!
+              </div>
+              <h2 className="mt-6 text-2xl">
+                {currentChallenge || "Swipe on Phone to Spin"}
+              </h2>
+            </>
           )}
         </>
       ) : (
         <>
-          <h1 className="text-2xl">Connected! Use gestures.</h1>
+          <p>Generating Peer ID...</p>
         </>
       )}
     </div>
