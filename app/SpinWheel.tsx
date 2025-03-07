@@ -5,7 +5,7 @@ import gsap from "gsap";
 interface SpinWheelProps {
   segments: string[]; // List of challenge texts
   colors: string[]; // Colors for each segment
-  spinTime: number; // Dynamic spin time based on force
+  spinTime: number; // Dynamic spin time
   spinCount: number; // Number of spins before stopping
   startSpin: boolean; // Trigger spinning
   onFinished: (winner: string) => void; // Callback when spin stops
@@ -22,6 +22,7 @@ export default function SpinWheel({
   const wheelContainerRef = useRef<HTMLDivElement | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentAngle, setCurrentAngle] = useState(0);
+  const segmentSize = 360 / segments.length; // Each segment size
   const wheelSize = 300; // Set wheel size
 
   useEffect(() => {
@@ -34,22 +35,21 @@ export default function SpinWheel({
     if (isSpinning) return;
     setIsSpinning(true);
 
-    // ✅ Ensure the wheel stops on an exact segment
-    const segmentSize = 360 / segments.length;
-    const extraRotation = Math.random() * segmentSize; // Small random offset
+    // 🔹 Generate a random stop position ensuring alignment with the red pointer
+    const extraRotation = Math.random() * segmentSize; // Random final stop within a segment
     const totalRotation = spinCount * 360 + extraRotation;
 
-    // ✅ Snap the final angle so the winning segment aligns exactly
-    const finalAngle = (currentAngle + totalRotation) % 360;
-    const adjustedAngle = (360 - finalAngle + segmentSize / 2) % 360; // Align pointer at 0°
-    const winningIndex = Math.floor(adjustedAngle / segmentSize);
-
     gsap.to(wheelContainerRef.current, {
-      rotation: `+=${totalRotation - extraRotation}`, // Remove random offset
+      rotation: `+=${totalRotation}`,
       duration: spinTime / 1000,
       ease: "power4.out",
       onComplete: () => {
         setIsSpinning(false);
+
+        // ✅ Get the exact angle where the wheel stopped
+        const finalAngle = (currentAngle + totalRotation) % 360;
+        const adjustedAngle = (360 - finalAngle + segmentSize / 2) % 360; // Align with red pointer
+        const winningIndex = Math.floor(adjustedAngle / segmentSize);
 
         console.log(
           "🎯 Winning Index:",
@@ -58,11 +58,11 @@ export default function SpinWheel({
           segments[winningIndex]
         );
 
-        // ✅ Ensure the final segment under the pointer is the winner
+        // ✅ Ensure correct result is sent
         onFinished(segments[winningIndex]);
 
-        // ✅ Store the exact final rotation
-        setCurrentAngle(finalAngle - extraRotation);
+        // ✅ Store the new stopping angle
+        setCurrentAngle(finalAngle);
       },
     });
   };
