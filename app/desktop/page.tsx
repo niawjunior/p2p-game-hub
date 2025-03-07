@@ -136,10 +136,11 @@ export default function DesktopPage() {
     const checkInactivePhones = () => {
       const now = Date.now();
 
+      // Check for inactive phones
       setConnectedPhones((prevPhones) =>
         prevPhones.filter((conn) => {
           const lastPing = phoneHeartbeats.current[conn.peer] || 0;
-          const isAlive = now - lastPing < 10000; // 10s timeout
+          const isAlive = now - lastPing < 15000; // Increase timeout to 15s
           if (!isAlive)
             console.warn(`❌ Removing inactive phone: ${conn.peer}`);
           return isAlive;
@@ -147,15 +148,14 @@ export default function DesktopPage() {
       );
 
       setPhoneIds((prevIds) =>
-        prevIds.filter(
-          (id) =>
-            phoneHeartbeats.current[id] &&
-            now - phoneHeartbeats.current[id] < 10000
-        )
+        prevIds.filter((id) => {
+          const lastPing = phoneHeartbeats.current[id] || 0;
+          return now - lastPing < 15000; // Ensure IDs are only removed if actually inactive
+        })
       );
     };
 
-    const interval = setInterval(checkInactivePhones, 10000);
+    const interval = setInterval(checkInactivePhones, 10000); // Check every 10s
     return () => clearInterval(interval);
   }, []);
 

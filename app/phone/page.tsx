@@ -85,15 +85,15 @@ export default function PhonePage() {
     if (conn) {
       const sendHeartbeat = () => {
         if (conn.open) {
+          console.log("💓 Sending heartbeat...");
           conn.send({ event: "heartbeat" });
         }
       };
 
-      const interval = setInterval(sendHeartbeat, 5000); // Send every 5s
+      const interval = setInterval(sendHeartbeat, 5000); // Send heartbeat every 5s
       return () => clearInterval(interval); // Cleanup on unmount
     }
   }, [conn]);
-
   const handleTouchStart = (e: TouchEvent) => {
     touchStartY = e.touches[0].clientY;
     touchStartTime = Date.now();
