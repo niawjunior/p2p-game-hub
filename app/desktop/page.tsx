@@ -132,33 +132,6 @@ export default function DesktopPage() {
     }
   }, [peer, router, startSpin]);
 
-  useEffect(() => {
-    const checkInactivePhones = () => {
-      const now = Date.now();
-
-      // Check for inactive phones
-      setConnectedPhones((prevPhones) =>
-        prevPhones.filter((conn) => {
-          const lastPing = phoneHeartbeats.current[conn.peer] || 0;
-          const isAlive = now - lastPing < 30000; // Increase timeout to 20s
-          if (!isAlive)
-            console.warn(`❌ Removing inactive phone: ${conn.peer}`);
-          return isAlive;
-        })
-      );
-
-      setPhoneIds((prevIds) =>
-        prevIds.filter((id) => {
-          const lastPing = phoneHeartbeats.current[id] || 0;
-          return now - lastPing < 30000; // Ensure IDs are only removed if actually inactive
-        })
-      );
-    };
-
-    const interval = setInterval(checkInactivePhones, 20000); // Check every 10s
-    return () => clearInterval(interval);
-  }, []);
-
   const initiateSpin = (force: number, peerId?: string) => {
     console.log("peerId", peerId);
     if (peerId) {

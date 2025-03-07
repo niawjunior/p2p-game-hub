@@ -81,19 +81,6 @@ export default function PhonePage() {
     }
   };
 
-  useEffect(() => {
-    if (conn) {
-      const sendHeartbeat = () => {
-        if (conn.open) {
-          console.log("💓 Sending heartbeat...");
-          conn.send({ event: "heartbeat" });
-        }
-      };
-
-      const interval = setInterval(sendHeartbeat, 10000); // Send heartbeat every 10s
-      return () => clearInterval(interval); // Cleanup on unmount
-    }
-  }, [conn]);
   const handleTouchStart = (e: TouchEvent) => {
     touchStartY = e.touches[0].clientY;
     touchStartTime = Date.now();
