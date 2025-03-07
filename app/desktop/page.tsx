@@ -2,50 +2,34 @@
 import { useEffect, useState } from "react";
 import Peer from "peerjs";
 import { QRCodeSVG } from "qrcode.react";
-import { SpinWheel, Option } from "react-prize-wheel";
+import SpinWheel from "../SpinWheel";
 
 // Define challenges as options
-const challenges: Option[] = [
-  {
-    text: "ดื่ม 2 ช็อต 🍻",
-    styles: { backgroundColor: "#ff4757", textColor: "#ffffff" },
-  },
-  {
-    text: "หมุนอีกครั้ง!",
-    styles: { backgroundColor: "#1e90ff", textColor: "#ffffff" },
-  },
-  {
-    text: "เลือกคนอื่นให้ดื่ม 🍷",
-    styles: { backgroundColor: "#2ed573", textColor: "#ffffff" },
-  },
-  {
-    text: "วิดพื้น 10 ครั้ง 💪",
-    styles: { backgroundColor: "#ffa502", textColor: "#ffffff" },
-  },
-  {
-    text: "เล่าเรื่องตลก 🎤",
-    styles: { backgroundColor: "#ff6b81", textColor: "#ffffff" },
-  },
-  {
-    text: "ดื่มโดยไม่ใช้มือ! 🙌",
-    styles: { backgroundColor: "#3742fa", textColor: "#ffffff" },
-  },
-  {
-    text: "ทำหน้าตลก 30 วินาที 😜",
-    styles: { backgroundColor: "#70a1ff", textColor: "#ffffff" },
-  },
-  {
-    text: "ทุกคนต้องดื่ม 🌊",
-    styles: { backgroundColor: "#7bed9f", textColor: "#ffffff" },
-  },
-  {
-    text: "สลับเสื้อกับใครสักคน 👕",
-    styles: { backgroundColor: "#5352ed", textColor: "#ffffff" },
-  },
-  {
-    text: "หมุนอีกครั้งและดื่ม 2 เท่า! 🔄",
-    styles: { backgroundColor: "#eccc68", textColor: "#ffffff" },
-  },
+
+const challenges = [
+  "ดื่ม 2 ช็อต 🍻",
+  "หมุนอีกครั้ง!",
+  "เลือกคนอื่นให้ดื่ม 🍷",
+  "วิดพื้น 10 ครั้ง 💪",
+  "เล่าเรื่องตลก 🎤",
+  "ดื่มโดยไม่ใช้มือ! 🙌",
+  "ทำหน้าตลก 30 วินาที 😜",
+  "ทุกคนต้องดื่ม 🌊",
+  "สลับเสื้อกับใครสักคน 👕",
+  "หมุนอีกครั้งและดื่ม 2 เท่า! 🔄",
+];
+
+const segmentColors = [
+  "#ff4757",
+  "#1e90ff",
+  "#2ed573",
+  "#ffa502",
+  "#ff6b81",
+  "#3742fa",
+  "#70a1ff",
+  "#7bed9f",
+  "#5352ed",
+  "#eccc68",
 ];
 
 export default function DesktopPage() {
@@ -90,8 +74,8 @@ export default function DesktopPage() {
     setStartSpin(true);
   };
 
-  const handleSpinCompleted = (option: Option) => {
-    setSelectedChallenge(option.text); // Use stored prize index
+  const handleSpinCompleted = (option: string) => {
+    setSelectedChallenge(option); // Use stored prize index
     setStartSpin(false);
   };
 
@@ -120,14 +104,11 @@ export default function DesktopPage() {
 
               {/* Realistic Spin Wheel */}
               <SpinWheel
-                options={challenges}
-                startSpin={startSpin}
+                segments={challenges}
+                colors={segmentColors}
                 spinTime={spinTime}
                 spinCount={spinCount}
-                styles={{
-                  size: 300,
-                }}
-                onSpinCompleted={handleSpinCompleted}
+                onFinished={handleSpinCompleted}
               />
 
               <h2 className="mt-6 text-2xl">
