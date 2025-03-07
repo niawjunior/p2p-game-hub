@@ -4,9 +4,8 @@ import Peer from "peerjs";
 import { QRCodeSVG } from "qrcode.react";
 import SpinWheel from "../SpinWheel";
 
-// Define challenges as options
-
-const challenges = [
+// Default challenge labels
+const defaultChallenges = [
   "ดื่ม 2 ช็อต 🍻",
   "หมุนอีกครั้ง!",
   "เลือกคนอื่นให้ดื่ม 🍷",
@@ -19,6 +18,7 @@ const challenges = [
   "หมุนอีกครั้งและดื่ม 2 เท่า! 🔄",
 ];
 
+// Segment colors remain the same
 const segmentColors = [
   "#ff4757",
   "#1e90ff",
@@ -42,8 +42,16 @@ export default function DesktopPage() {
   const [startSpin, setStartSpin] = useState(false);
   const [spinTime, setSpinTime] = useState(5000); // Default spin time
   const [spinCount, setSpinCount] = useState(10); // Default number of spins
+  const [isEditChallenges, setIsEditChallenges] = useState(false); // Default number of spins
+  const [challenges, setChallenges] = useState<string[]>(defaultChallenges);
 
   useEffect(() => {
+    // Load saved challenges from localStorage
+    const savedChallenges = localStorage.getItem("customChallenges");
+    if (savedChallenges) {
+      setChallenges(JSON.parse(savedChallenges));
+    }
+
     if (!peer) {
       const newPeer = new Peer();
       setPeer(newPeer);
@@ -75,8 +83,17 @@ export default function DesktopPage() {
   };
 
   const handleSpinCompleted = (option: string) => {
-    setSelectedChallenge(option); // Use stored prize index
+    setSelectedChallenge(option);
     setStartSpin(false);
+  };
+
+  const handleEditChallenge = (index: number, newValue: string) => {
+    const updatedChallenges = [...challenges];
+    updatedChallenges[index] = newValue;
+    setChallenges(updatedChallenges);
+
+    // Save updated challenges to localStorage
+    localStorage.setItem("customChallenges", JSON.stringify(updatedChallenges));
   };
 
   return (
@@ -86,8 +103,38 @@ export default function DesktopPage() {
           {!isConnected ? (
             <>
               <h1 className="text-2xl">Scan QR Code to Join</h1>
-              {peerId && (
+              {peerId && !isConnected && (
                 <>
+                  {/* Editable Challenge List */}
+                  <div className="mb-4 mt-4 px-4">
+                    <button
+                      className="px-4 absolute top-4 right-4 py-2 bg-green-500 z-2 hover:bg-green-600 transition text-white font-semibold rounded-lg"
+                      onClick={() => setIsEditChallenges(!isEditChallenges)}
+                    >
+                      Edit Challenges
+                    </button>
+                    {isEditChallenges && (
+                      <div className="absolute h-[70vh]  top-16 right-4 bg-gray-800 px-4 py-8 rounded-lg">
+                        <button
+                          onClick={() => setIsEditChallenges(false)}
+                          className="absolute top-0 text-2xl right-4 text-gray-300 hover:text-white transition"
+                        >
+                          x
+                        </button>
+                        {challenges.map((challenge, index) => (
+                          <input
+                            key={index}
+                            type="text"
+                            value={challenge}
+                            onChange={(e) =>
+                              handleEditChallenge(index, e.target.value)
+                            }
+                            className="w-full px-3 py-1 mb-2 text-white text-center rounded border border-gray-300 focus:outline-none"
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <QRCodeSVG
                     value={`https://drunk-wheel-challenge.vercel.app/phone?peerId=${peerId}`}
                     size={200}
@@ -102,7 +149,7 @@ export default function DesktopPage() {
             <>
               <h1 className="text-xl mb-6">🍻 Drunk Challenge Game 🎉</h1>
 
-              {/* Realistic Spin Wheel */}
+              {/* Spin Wheel */}
               <SpinWheel
                 segments={challenges}
                 colors={segmentColors}

@@ -65,7 +65,11 @@ export default function PhonePage() {
     const swipeTime = Date.now() - touchStartTime;
 
     if (deltaY < -50) {
-      const speed = Math.min(Math.abs(deltaY) / swipeTime, 10);
+      let speed = Math.abs(deltaY) / swipeTime;
+
+      const randomVariation = (Math.random() - 0.5) * 1;
+      speed = Math.max(1, Math.min(10, speed + randomVariation)); // Ensure it stays between 1 and 10
+
       console.log(`🎡 Swipe Detected! Speed: ${speed}`);
 
       conn.send({ gesture: "swipe", force: speed });
