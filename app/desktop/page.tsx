@@ -7,43 +7,43 @@ import { SpinWheel, Option } from "react-prize-wheel";
 // Define challenges as options
 const challenges: Option[] = [
   {
-    text: "Take 2 shots 🍻",
+    text: "ดื่ม 2 ช็อต 🍻",
     styles: { backgroundColor: "#ff4757", textColor: "#ffffff" },
   },
   {
-    text: "Spin again!",
+    text: "หมุนอีกครั้ง!",
     styles: { backgroundColor: "#1e90ff", textColor: "#ffffff" },
   },
   {
-    text: "Give a drink to someone 🍷",
+    text: "เลือกคนอื่นให้ดื่ม 🍷",
     styles: { backgroundColor: "#2ed573", textColor: "#ffffff" },
   },
   {
-    text: "Do 10 pushups 💪",
+    text: "วิดพื้น 10 ครั้ง 💪",
     styles: { backgroundColor: "#ffa502", textColor: "#ffffff" },
   },
   {
-    text: "Tell a funny story 🎤",
+    text: "เล่าเรื่องตลก 🎤",
     styles: { backgroundColor: "#ff6b81", textColor: "#ffffff" },
   },
   {
-    text: "Drink with no hands! 🙌",
+    text: "ดื่มโดยไม่ใช้มือ! 🙌",
     styles: { backgroundColor: "#3742fa", textColor: "#ffffff" },
   },
   {
-    text: "Make a silly face for 30 sec 😜",
+    text: "ทำหน้าตลก 30 วินาที 😜",
     styles: { backgroundColor: "#70a1ff", textColor: "#ffffff" },
   },
   {
-    text: "Waterfall! Everyone drinks! 🌊",
+    text: "ทุกคนต้องดื่ม 🌊",
     styles: { backgroundColor: "#7bed9f", textColor: "#ffffff" },
   },
   {
-    text: "Switch shirts with someone 👕",
+    text: "สลับเสื้อกับใครสักคน 👕",
     styles: { backgroundColor: "#5352ed", textColor: "#ffffff" },
   },
   {
-    text: "Spin again & double! 🔄",
+    text: "หมุนอีกครั้งและดื่ม 2 เท่า! 🔄",
     styles: { backgroundColor: "#eccc68", textColor: "#ffffff" },
   },
 ];
@@ -124,6 +124,9 @@ export default function DesktopPage() {
                 startSpin={startSpin}
                 spinTime={spinTime}
                 spinCount={spinCount}
+                styles={{
+                  size: 300,
+                }}
                 onSpinCompleted={handleSpinCompleted}
               />
 
