@@ -36,6 +36,7 @@ const segmentColors = [
 export default function DesktopPage() {
   const [peer, setPeer] = useState<Peer | null>(null);
   const [peerId, setPeerId] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isConnected, setIsConnected] = useState(false);
   const [connectedPhones, setConnectedPhones] = useState<DataConnection[]>([]); // Store multiple connections
 
@@ -190,7 +191,7 @@ export default function DesktopPage() {
           <div>
             <h1 className="text-xl mb-6">🍻 Drunk Challenge Game 🎉</h1>
 
-            {!isConnected && !gameStarted && (
+            {!gameStarted && (
               <>
                 {/* Editable Challenge List */}
                 <div className="mb-4 mt-4 px-4">
