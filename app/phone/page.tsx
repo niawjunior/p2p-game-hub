@@ -33,15 +33,6 @@ export default function PhonePage() {
       setIsReady(true);
     });
 
-    newPeer.on("disconnected", () => {
-      window.location.href = "/";
-    });
-
-    newPeer.on("error", () => {
-      console.error("❌ Peer error! Redirecting...");
-      window.location.href = "/";
-    });
-
     return () => {
       newPeer.destroy();
     };
@@ -59,6 +50,16 @@ export default function PhonePage() {
         setConn(connection);
         setIsConnected(true);
         setIsConnecting(false);
+      });
+
+      connection.on("close", () => {
+        console.warn("⚠️ connection closed! Redirecting...");
+        window.location.href = "/"; // Redirect to home if connection is lost
+      });
+
+      connection.on("error", () => {
+        console.error("❌ Connection error! Redirecting...");
+        window.location.href = "/"; // Redirect to home if connection fails
       });
     }
   };
