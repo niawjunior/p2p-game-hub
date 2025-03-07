@@ -50,6 +50,7 @@ export default function DesktopPage() {
   const [phoneIds, setPhoneIds] = useState<string[]>([]); // Store Peer IDs of phones
   const [gameStarted, setGameStarted] = useState(false);
   const phoneHeartbeats = useRef<{ [key: string]: number }>({});
+  const [currentSpinner, setCurrentSpinner] = useState<string | null>("host"); // Store who started the spin
 
   const router = useRouter();
 
@@ -93,7 +94,7 @@ export default function DesktopPage() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         conn.on("data", (data: any) => {
           if (data.gesture === "swipe" && !startSpin) {
-            initiateSpin(data.force);
+            initiateSpin(data.force, conn.peer);
           }
           if (data.event === "heartbeat") {
             phoneHeartbeats.current[conn.peer] = Date.now();
@@ -158,7 +159,14 @@ export default function DesktopPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const initiateSpin = (force: number) => {
+  const initiateSpin = (force: number, peerId?: string) => {
+    console.log("peerId", peerId);
+    if (peerId) {
+      setCurrentSpinner(peerId); // Store the peer ID of the phone that triggered the spin
+    } else {
+      setCurrentSpinner("host"); // Host (desktop) started the spin
+    }
+
     console.log("Force:", force);
     setSpinTime(3000 + force * 500); // Adjust spin time based on force
     setSpinCount(5 + Math.floor(force * 3)); // More force = more spins
@@ -174,12 +182,25 @@ export default function DesktopPage() {
   const handleSpinCompleted = (option: string) => {
     setSelectedChallenge(option);
     setStartSpin(false);
-
-    connectedPhones.forEach((conn) => {
-      if (conn.open) {
-        conn.send({ event: "spinResult", result: option });
+    console.log("currentSpinner", currentSpinner);
+    if (currentSpinner === "host") {
+      // If the desktop triggered the spin, send the result to all phones
+      connectedPhones.forEach((conn) => {
+        if (conn.open) {
+          conn.send({ event: "spinResult", result: option });
+        }
+      });
+    } else {
+      // If a specific phone swiped, send result only to that phone
+      const targetPhone = connectedPhones.find(
+        (conn) => conn.peer === currentSpinner
+      );
+      if (targetPhone && targetPhone.open) {
+        targetPhone.send({ event: "spinResult", result: option });
       }
-    });
+    }
+
+    setCurrentSpinner(null); // Reset spinner ID after spin is done
   };
 
   const handleEditChallenge = (index: number, newValue: string) => {
