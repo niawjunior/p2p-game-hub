@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Peer from "peerjs";
 import { QRCodeSVG } from "qrcode.react";
 import SpinWheel from "../SpinWheel";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 // Default challenge labels
 const defaultChallenges = [

@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import Peer from "peerjs";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 export default function PhonePage() {
   const [peer, setPeer] = useState<Peer | null>(null);
