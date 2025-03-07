@@ -58,7 +58,6 @@ export default function DesktopPage() {
   const [startSpin, setStartSpin] = useState(false);
   const [spinTime, setSpinTime] = useState(5000); // Default spin time
   const [spinCount, setSpinCount] = useState(10); // Default number of spins
-  const [prizeNumber, setPrizeNumber] = useState(0);
 
   useEffect(() => {
     if (!peer) {
@@ -86,16 +85,13 @@ export default function DesktopPage() {
 
   const initiateSpin = (force: number) => {
     console.log("Force:", force);
-    const randomPrizeNumber = Math.floor(Math.random() * challenges.length);
-    setPrizeNumber(randomPrizeNumber); // Store the selected prize index
-
     setSpinTime(3000 + force * 500); // Adjust spin time based on force
     setSpinCount(5 + Math.floor(force * 3)); // More force = more spins
     setStartSpin(true);
   };
 
-  const handleSpinCompleted = () => {
-    setSelectedChallenge(challenges[prizeNumber].text); // Use stored prize index
+  const handleSpinCompleted = (option: Option) => {
+    setSelectedChallenge(option.text); // Use stored prize index
     setStartSpin(false);
   };
 
