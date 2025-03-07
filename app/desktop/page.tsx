@@ -1,28 +1,44 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Peer from "peerjs";
 import { QRCodeSVG } from "qrcode.react";
+import { Wheel } from "react-custom-roulette";
 
 const challenges = [
-  "Take 2 shots 🍻",
-  "Spin again!",
-  "Give a drink to someone 🍷",
-  "Do 10 pushups 💪",
-  "Tell a funny story 🎤",
-  "Drink with no hands! 🙌",
-  "Make a silly face for 30 sec 😜",
-  "Waterfall! Everyone drinks! 🌊",
-  "Switch shirts with someone 👕",
-  "Spin again & double! 🔄",
+  { option: "Take 2 shots 🍻" },
+  { option: "Spin again!" },
+  { option: "Give a drink to someone 🍷" },
+  { option: "Do 10 pushups 💪" },
+  { option: "Tell a funny story 🎤" },
+  { option: "Drink with no hands! 🙌" },
+  { option: "Make a silly face for 30 sec 😜" },
+  { option: "Waterfall! Everyone drinks! 🌊" },
+  { option: "Switch shirts with someone 👕" },
+  { option: "Spin again & double! 🔄" },
+];
+
+const segmentColors = [
+  "#ff4757",
+  "#1e90ff",
+  "#2ed573",
+  "#ffa502",
+  "#ff6b81",
+  "#3742fa",
+  "#70a1ff",
+  "#7bed9f",
+  "#5352ed",
+  "#eccc68",
 ];
 
 export default function DesktopPage() {
   const [peer, setPeer] = useState<Peer | null>(null);
   const [peerId, setPeerId] = useState("");
   const [isConnected, setIsConnected] = useState(false);
-  const [currentChallenge, setCurrentChallenge] = useState<string | null>(null);
-  const wheelRef = useRef<HTMLDivElement>(null);
-  const [rotation, setRotation] = useState(0);
+  const [selectedChallenge, setSelectedChallenge] = useState<string | null>(
+    null
+  );
+  const [mustSpin, setMustSpin] = useState(false);
+  const [prizeNumber, setPrizeNumber] = useState(0);
 
   useEffect(() => {
     if (!peer) {
@@ -40,28 +56,25 @@ export default function DesktopPage() {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         conn.on("data", (data: any) => {
-          if (data.gesture === "swipe") {
-            spinWheel(data.force); // Use swipe force
+          if (data.gesture === "swipe" && !mustSpin) {
+            const force = data.force || 1;
+            initiateSpin(force);
           }
         });
       });
     }
-  }, [peer]);
+  }, [peer, mustSpin]);
 
-  const spinWheel = (force: number = 1) => {
-    if (wheelRef.current) {
-      const spinAmount = Math.random() * 360 + force * 500; // More force = more spins
-      setRotation((prev) => prev + spinAmount);
+  const initiateSpin = (force: number) => {
+    console.log("Force:", force);
+    const newPrizeNumber = Math.floor(Math.random() * challenges.length);
+    setPrizeNumber(newPrizeNumber);
+    setMustSpin(true);
+  };
 
-      wheelRef.current.style.transition = `transform ${1 + force}s ease-out`;
-      wheelRef.current.style.transform = `rotate(${rotation + spinAmount}deg)`;
-
-      // Pick a random challenge after spinning
-      setTimeout(() => {
-        const randomIndex = Math.floor(Math.random() * challenges.length);
-        setCurrentChallenge(challenges[randomIndex]);
-      }, (1 + force) * 1000);
-    }
+  const handleSpinStop = () => {
+    setMustSpin(false);
+    setSelectedChallenge(challenges[prizeNumber].option);
   };
 
   return (
@@ -86,22 +99,36 @@ export default function DesktopPage() {
           ) : (
             <>
               <h1 className="text-3xl">🍻 Drunk Challenge Game 🎉</h1>
-              <div
-                ref={wheelRef}
-                className="mt-8 min-w-40 min-h-40 w-40 h-40 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xl"
-              >
-                🎡 Spin Me!
-              </div>
+
+              {/* Realistic Spin Wheel */}
+              <Wheel
+                mustStartSpinning={mustSpin}
+                prizeNumber={prizeNumber}
+                data={challenges}
+                onStopSpinning={handleSpinStop}
+                backgroundColors={segmentColors}
+                textColors={["#ffffff"]}
+                outerBorderColor="black"
+                outerBorderWidth={5}
+                innerRadius={0}
+                innerBorderColor="black"
+                innerBorderWidth={0}
+                radiusLineColor="black"
+                radiusLineWidth={5}
+                fontSize={16}
+                perpendicularText={true}
+                textDistance={60}
+                spinDuration={0.5 + prizeNumber * 0.1} // Adjust spin duration based on prize number
+              />
+
               <h2 className="mt-6 text-2xl">
-                {currentChallenge || "Swipe on Phone to Spin"}
+                {selectedChallenge || "Swipe on Phone to Spin!"}
               </h2>
             </>
           )}
         </>
       ) : (
-        <>
-          <p>Generating Peer ID...</p>
-        </>
+        <p>Generating Peer ID...</p>
       )}
     </div>
   );

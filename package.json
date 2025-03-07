@@ -11,9 +11,11 @@
   "dependencies": {
     "@nut-tree-fork/nut-js": "^4.2.4",
     "next": "15.2.1",
+    "or": "^0.2.0",
     "peerjs": "^1.5.4",
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
+    "react-custom-roulette": "^1.4.1",
     "react-dom": "^19.0.0",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1"
