@@ -34,13 +34,12 @@ export default function PhonePage() {
     });
 
     newPeer.on("disconnected", () => {
-      console.warn("⚠️ Peer disconnected! Redirecting...");
-      router.push("/");
+      window.location.href = "/";
     });
 
     newPeer.on("error", () => {
       console.error("❌ Peer error! Redirecting...");
-      router.push("/");
+      window.location.href = "/";
     });
 
     return () => {

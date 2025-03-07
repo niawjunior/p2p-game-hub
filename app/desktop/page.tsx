@@ -76,23 +76,23 @@ export default function DesktopPage() {
 
         conn.on("close", () => {
           console.warn("⚠️ Connection closed! Redirecting...");
-          router.push("/"); // Redirect to home if connection is lost
+          window.location.href = "/"; // Redirect to home if connection is lost
         });
 
         conn.on("error", () => {
           console.error("❌ Connection error! Redirecting...");
-          router.push("/"); // Redirect to home if connection fails
+          window.location.href = "/"; // Redirect to home if connection fails
         });
       });
 
       newPeer.on("disconnected", () => {
         console.warn("⚠️ Peer disconnected! Redirecting...");
-        router.push("/"); // Redirect on peer disconnection
+        window.location.href = "/";
       });
 
       newPeer.on("error", () => {
         console.error("❌ Peer error! Redirecting...");
-        router.push("/"); // Redirect on peer error
+        window.location.href = "/"; // Redirect on peer error
       });
     }
   }, [peer, router, startSpin]);
