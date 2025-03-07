@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import Peer from "peerjs";
+import { useRouter } from "next/router";
 
 export default function PhonePage() {
   const [peer, setPeer] = useState<Peer | null>(null);
@@ -13,6 +14,7 @@ export default function PhonePage() {
   const [isReady, setIsReady] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const router = useRouter();
 
   let touchStartY = 0;
   let touchStartTime = 0;
@@ -31,10 +33,20 @@ export default function PhonePage() {
       setIsReady(true);
     });
 
+    newPeer.on("disconnected", () => {
+      console.warn("⚠️ Peer disconnected! Redirecting...");
+      router.push("/");
+    });
+
+    newPeer.on("error", () => {
+      console.error("❌ Peer error! Redirecting...");
+      router.push("/");
+    });
+
     return () => {
       newPeer.destroy();
     };
-  }, []);
+  }, [router]);
 
   const handleConnect = (inputPeerId?: string) => {
     const desktopId = inputPeerId || peerIdFromUrl; // Use manual input if provided

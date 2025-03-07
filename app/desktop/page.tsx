@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Peer from "peerjs";
 import { QRCodeSVG } from "qrcode.react";
 import SpinWheel from "../SpinWheel";
+import { useRouter } from "next/router";
 
 // Default challenge labels
 const defaultChallenges = [
@@ -44,6 +45,7 @@ export default function DesktopPage() {
   const [spinCount, setSpinCount] = useState(10); // Default number of spins
   const [isEditChallenges, setIsEditChallenges] = useState(false); // Default number of spins
   const [challenges, setChallenges] = useState<string[]>(defaultChallenges);
+  const router = useRouter();
 
   useEffect(() => {
     // Load saved challenges from localStorage
@@ -71,9 +73,29 @@ export default function DesktopPage() {
             initiateSpin(data.force);
           }
         });
+
+        conn.on("close", () => {
+          console.warn("⚠️ Connection closed! Redirecting...");
+          router.push("/"); // Redirect to home if connection is lost
+        });
+
+        conn.on("error", () => {
+          console.error("❌ Connection error! Redirecting...");
+          router.push("/"); // Redirect to home if connection fails
+        });
+      });
+
+      newPeer.on("disconnected", () => {
+        console.warn("⚠️ Peer disconnected! Redirecting...");
+        router.push("/"); // Redirect on peer disconnection
+      });
+
+      newPeer.on("error", () => {
+        console.error("❌ Peer error! Redirecting...");
+        router.push("/"); // Redirect on peer error
       });
     }
-  }, [peer, startSpin]);
+  }, [peer, router, startSpin]);
 
   const initiateSpin = (force: number) => {
     console.log("Force:", force);
