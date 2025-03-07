@@ -59,7 +59,7 @@ export default function SpinWheel({
         );
 
         // ✅ Ensure correct result is sent
-        onFinished(segments[winningIndex] + 3);
+        onFinished(segments[winningIndex + 3]);
 
         // ✅ Store the new stopping angle
         setCurrentAngle(finalAngle);
