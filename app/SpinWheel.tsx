@@ -22,42 +22,38 @@ export default function SpinWheel({
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentAngle, setCurrentAngle] = useState(0);
 
-  let touchStartY = 0;
-
-  const handleTouchStart = (e: TouchEvent) => {
-    touchStartY = e.touches[0].clientY;
-  };
-
-  const handleTouchEnd = (e: TouchEvent) => {
-    if (isSpinning) return;
-
-    const touchEndY = e.changedTouches[0].clientY;
-    const deltaY = touchStartY - touchEndY;
-
-    if (deltaY > 50) {
-      console.log("🎡 Swipe Detected! Spinning the wheel...");
-      spinWheel();
-    }
-  };
-
   const spinWheel = () => {
     if (isSpinning) return;
     setIsSpinning(true);
 
-    const finalAngle = spinCount * 360 + Math.random() * 360;
+    const totalRotation = spinCount * 360 + Math.random() * 360; // Add randomness
+    const finalAngle = (currentAngle + totalRotation) % 360; // Keep rotation within bounds
 
     gsap.to(wheelContainerRef.current, {
-      rotation: `+=${finalAngle}`,
+      rotation: `+=${totalRotation}`,
       duration: spinTime / 1000,
       ease: "power4.out",
       onComplete: () => {
         setIsSpinning(false);
-        const winningIndex = Math.floor(
-          ((currentAngle + finalAngle) % 360) / (360 / segments.length)
+
+        // Determine winning segment based on final angle
+        const segmentSize = 360 / segments.length;
+        const winningIndex =
+          Math.floor((360 - (finalAngle % 360)) / segmentSize) %
+          segments.length;
+
+        console.log(
+          "🎯 Winning Index:",
+          winningIndex,
+          "Segment:",
+          segments[winningIndex]
         );
-        const winner = segments[segments.length - 1 - winningIndex];
-        onFinished(winner);
-        setCurrentAngle((prev) => (prev + finalAngle) % 360);
+
+        // Callback with winning result
+        onFinished(segments[winningIndex]);
+
+        // Update current angle
+        setCurrentAngle(finalAngle);
       },
     });
   };
@@ -94,14 +90,6 @@ export default function SpinWheel({
     };
 
     drawWheel();
-
-    document.addEventListener("touchstart", handleTouchStart);
-    document.addEventListener("touchend", handleTouchEnd);
-
-    return () => {
-      document.removeEventListener("touchstart", handleTouchStart);
-      document.removeEventListener("touchend", handleTouchEnd);
-    };
   }, [segments, colors]);
 
   return (
@@ -120,6 +108,11 @@ export default function SpinWheel({
       <div className="absolute top-0 flex justify-center items-center">
         <div className="w-0 h-0 border-l-8 border-r-8 border-b-16 border-transparent border-b-red-500"></div>
       </div>
+
+      {/* Hidden button to trigger spin externally */}
+      <button className="hidden" onClick={spinWheel} disabled={isSpinning}>
+        Spin (Hidden)
+      </button>
     </div>
   );
 }
