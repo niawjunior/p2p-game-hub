@@ -59,9 +59,8 @@ export default function SpinWheel({
         );
 
         // ✅ Ensure correct result is sent
-        onFinished(
-          winningIndex <= 0 ? segments[0] : segments[winningIndex - 3]
-        );
+        const calIndex = winningIndex - 3 <= 0 ? 0 : winningIndex - 3;
+        onFinished(segments[calIndex]);
 
         // ✅ Store the new stopping angle
         setCurrentAngle(finalAngle);
