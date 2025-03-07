@@ -5,8 +5,8 @@ export default function Home() {
   const router = useRouter();
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
-      <h1 className="text-3xl font-bold">🍻 Drunk Challenge Game 🎉</h1>
+    <div className="flex flex-col items-center justify-center h-screen overflow-hidden bg-gray-900 text-white p-2">
+      <h1 className="text-xl font-bold">🍻 Drunk Challenge Game 🎉</h1>
       <p className="mt-2 text-lg text-gray-300">Choose your role to begin</p>
 
       <div className="mt-6 flex space-x-4">
