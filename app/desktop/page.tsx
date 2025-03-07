@@ -22,6 +22,7 @@ export default function DesktopPage() {
   const [isConnected, setIsConnected] = useState(false);
   const [currentChallenge, setCurrentChallenge] = useState<string | null>(null);
   const wheelRef = useRef<HTMLDivElement>(null);
+  const [rotation, setRotation] = useState(0);
 
   useEffect(() => {
     if (!peer) {
@@ -40,22 +41,26 @@ export default function DesktopPage() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         conn.on("data", (data: any) => {
           if (data.gesture === "swipe") {
-            spinWheel();
+            spinWheel(data.force); // Use swipe force
           }
         });
       });
     }
   }, [peer]);
 
-  const spinWheel = () => {
+  const spinWheel = (force: number = 1) => {
     if (wheelRef.current) {
-      const randomIndex = Math.floor(Math.random() * challenges.length);
-      setCurrentChallenge(challenges[randomIndex]);
+      const spinAmount = Math.random() * 360 + force * 500; // More force = more spins
+      setRotation((prev) => prev + spinAmount);
 
-      wheelRef.current.style.transition = "transform 2s ease-out";
-      wheelRef.current.style.transform = `rotate(${
-        Math.random() * 360 + 720
-      }deg)`;
+      wheelRef.current.style.transition = `transform ${1 + force}s ease-out`;
+      wheelRef.current.style.transform = `rotate(${rotation + spinAmount}deg)`;
+
+      // Pick a random challenge after spinning
+      setTimeout(() => {
+        const randomIndex = Math.floor(Math.random() * challenges.length);
+        setCurrentChallenge(challenges[randomIndex]);
+      }, (1 + force) * 1000);
     }
   };
 
@@ -83,7 +88,7 @@ export default function DesktopPage() {
               <h1 className="text-3xl">🍻 Drunk Challenge Game 🎉</h1>
               <div
                 ref={wheelRef}
-                className="mt-8 w-40 h-40 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-xl"
+                className="mt-8 min-w-40 min-h-40 w-40 h-40 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xl"
               >
                 🎡 Spin Me!
               </div>
