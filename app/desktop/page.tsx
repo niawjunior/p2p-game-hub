@@ -89,7 +89,7 @@ export default function DesktopPage() {
               {peerId && (
                 <>
                   <QRCodeSVG
-                    value={`https://remote-desktop-three.vercel.app/phone?peerId=${peerId}`}
+                    value={`https://drunk-wheel-challenge.vercel.app/phone?peerId=${peerId}`}
                     size={200}
                     className="mt-4"
                   />
