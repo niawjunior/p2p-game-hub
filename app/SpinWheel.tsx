@@ -34,6 +34,7 @@ export default function SpinWheel({
     if (isSpinning) return;
     setIsSpinning(true);
 
+    // Spin between 5 to 10 full rotations and add a random final position
     const totalRotation = spinCount * 360 + Math.random() * 360;
     const finalAngle = (currentAngle + totalRotation) % 360;
 
@@ -44,13 +45,10 @@ export default function SpinWheel({
       onComplete: () => {
         setIsSpinning(false);
 
-        // Determine winning segment
+        // ✅ **Calculate the correct winning segment**
         const segmentSize = 360 / segments.length;
-        const pointerAngle = 0; // Pointer is always at 0°
-        const winningIndex =
-          (segments.length -
-            Math.floor((finalAngle + pointerAngle) / segmentSize)) %
-          segments.length;
+        const adjustedAngle = (360 - finalAngle) % 360; // Reverse rotation direction
+        const winningIndex = Math.floor(adjustedAngle / segmentSize);
 
         console.log(
           "🎯 Winning Index:",
@@ -59,10 +57,10 @@ export default function SpinWheel({
           segments[winningIndex]
         );
 
-        // Send winning result
+        // ✅ **Send the correct winning result**
         onFinished(segments[winningIndex]);
 
-        // Store final rotation
+        // ✅ **Store final rotation angle**
         setCurrentAngle(finalAngle);
       },
     });
