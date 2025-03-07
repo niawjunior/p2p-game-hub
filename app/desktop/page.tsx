@@ -58,7 +58,6 @@ export default function DesktopPage() {
   const [startSpin, setStartSpin] = useState(false);
   const [spinTime, setSpinTime] = useState(5000); // Default spin time
   const [spinCount, setSpinCount] = useState(10); // Default number of spins
-  const [prizeNumber, setPrizeNumber] = useState(0);
 
   useEffect(() => {
     if (!peer) {
@@ -87,10 +86,6 @@ export default function DesktopPage() {
   const initiateSpin = (force: number) => {
     console.log("Force:", force);
 
-    // Select the prize index before starting the spin
-    const randomPrizeNumber = Math.floor(Math.random() * challenges.length);
-    setPrizeNumber(randomPrizeNumber); // Store it to match the final result
-
     setSpinTime(3000 + force * 500); // Adjust spin time based on force
     setSpinCount(5 + Math.floor(force * 3)); // More force = more spins
     setStartSpin(true);
@@ -99,8 +94,7 @@ export default function DesktopPage() {
     console.log("🎯 Winning Segment from Wheel:", option.text);
 
     // Find the correct challenge from the stored prizeNumber
-    const correctChallenge = challenges[prizeNumber].text;
-    setSelectedChallenge(correctChallenge); // Set the correct challenge
+    setSelectedChallenge(option.text); // Set the correct challenge
 
     setStartSpin(false);
   };
