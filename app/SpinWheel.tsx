@@ -8,6 +8,7 @@ interface SpinWheelProps {
   spinTime: number; // Dynamic spin time
   spinCount: number; // Dynamic number of spins
   onFinished: (winner: string) => void; // Callback when spin stops
+  startSpin: boolean; // New: Start spinning trigger
 }
 
 export default function SpinWheel({
@@ -16,11 +17,18 @@ export default function SpinWheel({
   spinTime,
   spinCount,
   onFinished,
+  startSpin,
 }: SpinWheelProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wheelContainerRef = useRef<HTMLDivElement | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentAngle, setCurrentAngle] = useState(0);
+
+  useEffect(() => {
+    if (startSpin && !isSpinning) {
+      spinWheel();
+    }
+  }, [startSpin]); // Watch for `startSpin` changes
 
   const spinWheel = () => {
     if (isSpinning) return;

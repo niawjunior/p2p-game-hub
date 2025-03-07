@@ -109,6 +109,7 @@ export default function DesktopPage() {
                 spinTime={spinTime}
                 spinCount={spinCount}
                 onFinished={handleSpinCompleted}
+                startSpin={startSpin}
               />
 
               <h2 className="mt-6 text-2xl">
