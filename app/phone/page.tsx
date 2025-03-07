@@ -14,6 +14,8 @@ export default function PhonePage() {
   const [isReady, setIsReady] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const [isGameStarted, setIsGameStarted] = useState(false);
   const router = useRouter();
 
   let touchStartY = 0;
@@ -52,6 +54,21 @@ export default function PhonePage() {
         setIsConnecting(false);
       });
 
+      connection.on("data", (data: any) => {
+        if (data.event === "spinStarted") {
+          console.log("🎡 Spin started!");
+        }
+        if (data.event === "spinResult") {
+          console.log("🏆 Spin result:", data.result);
+          setResult(data.result);
+        }
+
+        if (data.event === "gameStarted") {
+          console.log("🎮 Game started!");
+          setIsGameStarted(true);
+        }
+      });
+
       connection.on("close", () => {
         console.warn("⚠️ connection closed! Redirecting...");
         window.location.href = "/"; // Redirect to home if connection is lost
@@ -63,6 +80,19 @@ export default function PhonePage() {
       });
     }
   };
+
+  useEffect(() => {
+    if (conn) {
+      const sendHeartbeat = () => {
+        if (conn.open) {
+          conn.send({ event: "heartbeat" });
+        }
+      };
+
+      const interval = setInterval(sendHeartbeat, 2000); // Send every 2s
+      return () => clearInterval(interval); // Cleanup on unmount
+    }
+  }, [conn]);
 
   const handleTouchStart = (e: TouchEvent) => {
     touchStartY = e.touches[0].clientY;
@@ -130,12 +160,15 @@ export default function PhonePage() {
               </button>
             </>
           )}
-
-          {isConnected && (
+          {isConnected && !isGameStarted && (
+            <p className="text-green-500 mt-4">Waiting for game to start...</p>
+          )}
+          {isConnected && isGameStarted && (
             <p className="text-green-500 mt-4">
               ✅ Connected! Swipe up to spin!
             </p>
           )}
+          {result && <h2 className="text-xl mt-4">🎉 Result: {result}</h2>}
         </>
       ) : (
         <p>Generating Peer ID...</p>
