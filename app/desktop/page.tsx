@@ -2,7 +2,13 @@
 import { useEffect, useState } from "react";
 import Peer from "peerjs";
 import { QRCodeSVG } from "qrcode.react";
-import { SpinWheel } from "spin-wheel-game";
+import dynamic from "next/dynamic";
+const SpinWheel = dynamic(
+  () => import("spin-wheel-game").then((mod) => mod.SpinWheel),
+  {
+    ssr: false,
+  }
+);
 
 // Define challenges as options
 const challenges = [
