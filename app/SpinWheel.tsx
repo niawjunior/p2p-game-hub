@@ -27,7 +27,7 @@ export default function SpinWheel({
     if (startSpin && !isSpinning) {
       spinWheel();
     }
-  }, [startSpin]); // Watches for `startSpin` changes
+  }, [startSpin]);
 
   const spinWheel = () => {
     if (isSpinning) return;
@@ -43,7 +43,7 @@ export default function SpinWheel({
       onComplete: () => {
         setIsSpinning(false);
 
-        // 🏆 Determine winning segment (based on the fixed pointer at the top)
+        // Determine winning segment
         const segmentSize = 360 / segments.length;
         const pointerAngle = 0; // Pointer is always at 0°
         const winningIndex =
@@ -87,12 +87,32 @@ export default function SpinWheel({
               const y2 = 150 * Math.sin((endAngle * Math.PI) / 180);
 
               return (
-                <path
-                  key={index}
-                  d={`M0,0 L${x1},${y1} A150,150 0 0,1 ${x2},${y2} Z`}
-                  fill={colors[index]}
-                  stroke="black"
-                />
+                <g key={index}>
+                  {/* Segment Background */}
+                  <path
+                    d={`M0,0 L${x1},${y1} A150,150 0 0,1 ${x2},${y2} Z`}
+                    fill={colors[index]}
+                    stroke="black"
+                  />
+                  {/* Segment Text */}
+                  <text
+                    x={
+                      75 *
+                      Math.cos(((startAngle + endAngle) / 2) * (Math.PI / 180))
+                    }
+                    y={
+                      75 *
+                      Math.sin(((startAngle + endAngle) / 2) * (Math.PI / 180))
+                    }
+                    fill="white"
+                    fontFamily="Kanit"
+                    fontSize="14"
+                    textAnchor="middle"
+                    transform={`rotate(${(startAngle + endAngle) / 2}, 0, 0)`}
+                  >
+                    {segments[index]}
+                  </text>
+                </g>
               );
             })}
           </g>
