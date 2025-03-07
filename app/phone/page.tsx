@@ -89,7 +89,7 @@ export default function PhonePage() {
         }
       };
 
-      const interval = setInterval(sendHeartbeat, 2000); // Send every 2s
+      const interval = setInterval(sendHeartbeat, 5000); // Send every 5s
       return () => clearInterval(interval); // Cleanup on unmount
     }
   }, [conn]);
