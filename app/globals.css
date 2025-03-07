@@ -28,3 +28,7 @@ html {
   margin: 0;
   font-family: var(--font-kanit);
 }
+
+* {
+  font-family: "Kanit" !important;
+}
