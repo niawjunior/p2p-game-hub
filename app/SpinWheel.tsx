@@ -32,6 +32,7 @@ export default function SpinWheel({
   }, [startSpin]);
 
   const spinWheel = () => {
+    console.log("Spinning...");
     if (isSpinning) return;
     setIsSpinning(true);
 
@@ -59,7 +60,14 @@ export default function SpinWheel({
         );
 
         // ✅ Ensure correct result is sent
-        const calIndex = winningIndex - 3 <= 0 ? 0 : winningIndex - 3;
+        let calIndex = 0;
+        if (winningIndex < 3) {
+          calIndex = winningIndex + (segments.length - 3);
+        } else {
+          calIndex = winningIndex - (segments.length - 7);
+        }
+
+        console.log("Calculated Index:", calIndex);
         onFinished(segments[calIndex]);
 
         // ✅ Store the new stopping angle
@@ -123,6 +131,13 @@ export default function SpinWheel({
       <div className="absolute top-0 flex justify-center items-center">
         <div className="w-0 h-0 border-l-8 border-r-8 border-b-16 border-transparent border-b-red-500"></div>
       </div>
+
+      <button
+        className="mt-6 absolute bottom-[-60px] bg-blue-500 hover:bg-blue-600 transition cursor-pointer text-white font-semibold rounded-lg px-6 py-2"
+        onClick={spinWheel}
+      >
+        Spin
+      </button>
     </div>
   );
 }

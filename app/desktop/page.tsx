@@ -80,7 +80,7 @@ export default function DesktopPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white overflow-hidden">
       {peerId ? (
         <>
           {!isConnected ? (
@@ -100,7 +100,7 @@ export default function DesktopPage() {
             </>
           ) : (
             <>
-              <h1 className="text-3xl">🍻 Drunk Challenge Game 🎉</h1>
+              <h1 className="text-xl mb-6">🍻 Drunk Challenge Game 🎉</h1>
 
               {/* Realistic Spin Wheel */}
               <SpinWheel
@@ -112,7 +112,7 @@ export default function DesktopPage() {
                 startSpin={startSpin}
               />
 
-              <h2 className="mt-6 text-2xl">
+              <h2 className="mt-[70px] text-xl">
                 {selectedChallenge || "Swipe on Phone to Spin!"}
               </h2>
             </>
