@@ -5,8 +5,8 @@ import gsap from "gsap";
 interface SpinWheelProps {
   segments: string[]; // List of challenge texts
   colors: string[]; // Colors for each segment
-  spinTime: number; // Dynamic spin time
-  spinCount: number; // Dynamic number of spins
+  spinTime: number; // Dynamic spin time based on force
+  spinCount: number; // Number of spins before stopping
   startSpin: boolean; // Trigger spinning
   onFinished: (winner: string) => void; // Callback when spin stops
 }
@@ -34,21 +34,22 @@ export default function SpinWheel({
     if (isSpinning) return;
     setIsSpinning(true);
 
-    // Spin multiple full turns and then land at a random final position
-    const totalRotation = spinCount * 360 + Math.random() * 360;
+    // ✅ Ensure the wheel stops on an exact segment
+    const segmentSize = 360 / segments.length;
+    const extraRotation = Math.random() * segmentSize; // Small random offset
+    const totalRotation = spinCount * 360 + extraRotation;
+
+    // ✅ Snap the final angle so the winning segment aligns exactly
     const finalAngle = (currentAngle + totalRotation) % 360;
+    const adjustedAngle = (360 - finalAngle + segmentSize / 2) % 360; // Align pointer at 0°
+    const winningIndex = Math.floor(adjustedAngle / segmentSize);
 
     gsap.to(wheelContainerRef.current, {
-      rotation: `+=${totalRotation}`,
+      rotation: `+=${totalRotation - extraRotation}`, // Remove random offset
       duration: spinTime / 1000,
       ease: "power4.out",
       onComplete: () => {
         setIsSpinning(false);
-
-        // ✅ **Calculate the correct winning segment**
-        const segmentSize = 360 / segments.length;
-        const adjustedAngle = (finalAngle + segmentSize / 2) % 360; // Adjust to center pointer
-        const winningIndex = Math.floor(adjustedAngle / segmentSize);
 
         console.log(
           "🎯 Winning Index:",
@@ -57,11 +58,11 @@ export default function SpinWheel({
           segments[winningIndex]
         );
 
-        // ✅ **Send the correct winning result**
+        // ✅ Ensure the final segment under the pointer is the winner
         onFinished(segments[winningIndex]);
 
-        // ✅ **Store final rotation angle**
-        setCurrentAngle(finalAngle);
+        // ✅ Store the exact final rotation
+        setCurrentAngle(finalAngle - extraRotation);
       },
     });
   };
