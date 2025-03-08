@@ -307,7 +307,7 @@ export default function HostPage() {
                   onClick={() => navigator.clipboard.writeText(peerId)}
                   className="mt-2 px-4 w-full py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg"
                 >
-                  copy to clipboard
+                  Copy to clipboard
                 </button>
               </>
             )}
