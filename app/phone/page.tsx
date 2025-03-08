@@ -122,6 +122,12 @@ export default function PhonePage() {
     };
   }, [conn]);
 
+  const handleBackToHome = () => {
+    // close connection
+    handleDisconnect();
+    router.push("/");
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-900 overflow-hidden text-white">
       <h1 className="text-2xl">🍻 Drunk Challenge Game 🎉</h1>
@@ -130,7 +136,7 @@ export default function PhonePage() {
         <>
           <p className="mt-4 text-xs">Your ID: {peerId}</p>
 
-          <div className="max-w-md">
+          <div className="max-w-md px-4">
             {/* Nickname Input */}
             <input
               type="text"
@@ -168,6 +174,12 @@ export default function PhonePage() {
                 {isConnecting ? "Connecting..." : "Connect"}
               </button>
             )}
+            <button
+              onClick={() => handleBackToHome()}
+              className="mt-4 px-4 py-2 cursor-pointer w-full bg-indigo-400 hover:bg-indigo-600 text-white font-bold rounded-lg"
+            >
+              Back to Home
+            </button>
           </div>
           {isConnected && !isGameStarted && (
             <p className="text-green-500 mt-4">Waiting for game to start...</p>

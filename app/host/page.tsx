@@ -46,6 +46,7 @@ export default function HostPage() {
   const [challenges, setChallenges] = useState<string[]>(defaultChallenges);
   const [gameStarted, setGameStarted] = useState(false);
   const phoneHeartbeats = useRef<{ [key: string]: number }>({});
+
   const [currentSpinner, setCurrentSpinner] = useState<{
     id: string;
     nickname: string;
@@ -56,6 +57,17 @@ export default function HostPage() {
   >([]);
 
   const router = useRouter();
+
+  const closeConnection = () => {
+    if (players.length > 0) {
+      players.forEach((player) => {
+        if (player.connection.open) {
+          console.log(`❌ Closing connection with: ${player.id}`);
+          player.connection.close();
+        }
+      });
+    }
+  };
 
   useEffect(() => {
     // Load saved challenges from localStorage
@@ -109,23 +121,27 @@ export default function HostPage() {
         });
 
         conn.on("close", () => {
+          closeConnection();
           console.warn(`⚠️ Connection closed: ${conn.peer}`);
           setPlayers((prev) => prev.filter((p) => p.id !== conn.peer));
         });
 
         conn.on("error", () => {
+          closeConnection();
           console.error(`❌ Connection error with: ${conn.peer}`);
           setPlayers((prev) => prev.filter((p) => p.id !== conn.peer));
         });
       });
 
       newPeer.on("disconnected", () => {
+        closeConnection();
         console.warn("⚠️ Peer disconnected! Redirecting...");
         window.location.href = "/";
       });
 
       newPeer.on("error", () => {
         console.error("❌ Peer error! Redirecting...");
+        closeConnection();
         window.location.href = "/"; // Redirect on peer error
       });
     }
@@ -197,13 +213,19 @@ export default function HostPage() {
       }
     });
   };
+
+  const handleBackToHome = () => {
+    // close connection
+    closeConnection();
+    router.push("/");
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white overflow-hidden">
+      <h1 className="text-xl ">🍻 Drunk Challenge Game 🎉</h1>
       {peerId ? (
         <>
           <div>
-            <h1 className="text-xl mb-6">🍻 Drunk Challenge Game 🎉</h1>
-
             {!gameStarted && (
               <>
                 {/* Editable Challenge List */}
@@ -242,13 +264,13 @@ export default function HostPage() {
           <div className="flex justify-center flex-col items-center">
             {!gameStarted && players.length > 0 && (
               <button
-                className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg"
+                className="px-6 py-2 bg-blue-500 cursor-pointer hover:bg-blue-600 text-white font-bold rounded-lg"
                 onClick={() => startGame()}
               >
                 Start Game
               </button>
             )}
-            <div className="flex flex-col">
+            <div className="flex flex-col items-center">
               <h2 className="text-sm font-semibold mb-2 mt-2">
                 Players Online:
               </h2>
@@ -283,7 +305,7 @@ export default function HostPage() {
                 <p className="text-base font-bold">{peerId}</p>
                 <button
                   onClick={() => navigator.clipboard.writeText(peerId)}
-                  className="mt-2 px-4 w-[200px] py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg"
+                  className="mt-2 px-4 w-full py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg"
                 >
                   copy to clipboard
                 </button>
@@ -312,14 +334,14 @@ export default function HostPage() {
             {gameStarted && (
               <button
                 onClick={() => setGameStarted(false)}
-                className="mt-4 px-4 py-2 cursor-pointer w-[200px] bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg"
+                className="mt-4 px-4 py-2 cursor-pointer w-full bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg"
               >
                 Back to QR
               </button>
             )}
             <button
-              onClick={() => router.push("/")}
-              className="mt-4 px-4 py-2 cursor-pointer w-[200px] bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg"
+              onClick={() => handleBackToHome()}
+              className="mt-4 px-4 py-2 cursor-pointer w-full  bg-indigo-400 hover:bg-indigo-600 text-white font-bold rounded-lg"
             >
               Back to Home
             </button>
