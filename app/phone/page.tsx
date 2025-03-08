@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import Peer from "peerjs";
 import { useRouter } from "next/navigation";
@@ -8,14 +7,13 @@ export default function PhonePage() {
   const [peer, setPeer] = useState<Peer | null>(null);
   const [conn, setConn] = useState<any>(null);
   const [peerId, setPeerId] = useState<string | null>(null);
-  const [peerIdFromUrl, setPeerIdFromUrl] = useState<string | null>(null);
   const [manualPeerId, setManualPeerId] = useState<string>(""); // New: Manual input field
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isReady, setIsReady] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [isGameStarted, setIsGameStarted] = useState(false);
+  const [nickname, setNickname] = useState<string>(""); // User-entered nickname
+
   const router = useRouter();
 
   let touchStartY = 0;
@@ -24,15 +22,13 @@ export default function PhonePage() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const idFromUrl = urlParams.get("peerId");
-    setPeerIdFromUrl(idFromUrl);
-
+    setManualPeerId(idFromUrl || "");
     const newPeer = new Peer();
     setPeer(newPeer);
 
     newPeer.on("open", (id) => {
       setPeerId(id);
       console.log("✅ Phone Peer ID:", id);
-      setIsReady(true);
     });
 
     return () => {
@@ -41,17 +37,23 @@ export default function PhonePage() {
   }, [router]);
 
   const handleConnect = (inputPeerId?: string) => {
-    const desktopId = inputPeerId || peerIdFromUrl; // Use manual input if provided
-    if (peer && desktopId) {
-      console.log("🔗 Connecting to:", desktopId);
+    const hostId = inputPeerId;
+    if (peer && hostId && nickname) {
+      console.log("🔗 Connecting to:", hostId);
       setIsConnecting(true);
-      const connection = peer.connect(desktopId);
+      const connection = peer.connect(hostId);
 
       connection.on("open", () => {
         console.log("✅ Connected!");
         setConn(connection);
         setIsConnected(true);
         setIsConnecting(false);
+        // Send nickname to host
+        connection.send({
+          event: "join",
+          peerId: peerId,
+          nickname: String(nickname).trim(),
+        });
       });
 
       connection.on("data", (data: any) => {
@@ -105,6 +107,12 @@ export default function PhonePage() {
     }
   };
 
+  const handleDisconnect = () => {
+    if (conn && conn.open) {
+      conn.close();
+      setIsConnected(false);
+    }
+  };
   useEffect(() => {
     document.addEventListener("touchstart", handleTouchStart);
     document.addEventListener("touchend", handleTouchEnd);
@@ -115,50 +123,69 @@ export default function PhonePage() {
   }, [conn]);
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-black overflow-hidden text-white">
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-900 overflow-hidden text-white">
       <h1 className="text-2xl">🍻 Drunk Challenge Game 🎉</h1>
 
       {peerId ? (
         <>
-          <p className="mt-4">Your Peer ID: {peerId}</p>
+          <p className="mt-4 text-xs">Your ID: {peerId}</p>
 
-          {peerIdFromUrl ? (
-            <button
-              className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 transition text-white font-semibold rounded-lg"
-              onClick={() => handleConnect()}
-            >
-              Connect to Desktop
-            </button>
-          ) : (
-            <>
-              <input
-                type="text"
-                placeholder="Enter Desktop Peer ID"
-                value={manualPeerId}
-                onChange={(e) => setManualPeerId(e.target.value)}
-                className="mt-4 px-4 py-2 text-white outline-none rounded-lg border border-white"
-              />
+          <div className="max-w-md">
+            {/* Nickname Input */}
+            <input
+              type="text"
+              disabled={isConnected}
+              placeholder="Enter your nickname"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              className="mt-4 w-full px-4 py-2 text-white outline-none rounded-lg border border-white disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            <input
+              disabled={isConnected}
+              type="text"
+              placeholder="Enter Host ID"
+              value={manualPeerId}
+              onChange={(e) => setManualPeerId(e.target.value)}
+              className="mt-4 w-full px-4 py-2 text-white outline-none rounded-lg border border-white disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            {isConnected && (
               <button
-                className="mt-2 px-4 py-2 bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition text-white font-semibold rounded-lg"
+                className="mt-2 w-full px-4 py-2 bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition text-white font-semibold rounded-lg"
+                onClick={() => handleDisconnect()}
+              >
+                Disconnect
+              </button>
+            )}
+
+            {!isConnected && (
+              <button
+                className="mt-2 w-full px-4 py-2 bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition text-white font-semibold rounded-lg"
                 onClick={() => handleConnect(manualPeerId)}
-                disabled={!manualPeerId || isConnecting || isConnected}
+                disabled={
+                  !manualPeerId || isConnecting || isConnected || !nickname
+                }
               >
                 {isConnecting ? "Connecting..." : "Connect"}
               </button>
-            </>
-          )}
+            )}
+          </div>
           {isConnected && !isGameStarted && (
             <p className="text-green-500 mt-4">Waiting for game to start...</p>
           )}
           {isConnected && isGameStarted && (
-            <p className="text-green-500 mt-4">
-              ✅ Connected! Swipe up to spin!
-            </p>
+            <>
+              <p className="text-green-500 mt-4">
+                ✅ Connected! Swipe up to spin!
+              </p>
+              <p className="text-purple-600 mt-4">
+                Or waiting for the host to spin
+              </p>
+            </>
           )}
-          {result && <h2 className="text-xl mt-4">🎉 Result: {result}</h2>}
+          {result && <h2 className="text-xl mt-4">{result}</h2>}
         </>
       ) : (
-        <p>Generating Peer ID...</p>
+        <p>Generating ID...</p>
       )}
     </div>
   );

@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import Peer, { DataConnection } from "peerjs";
 import { QRCodeSVG } from "qrcode.react";
-import SpinWheel from "../SpinWheel";
+import SpinWheel from "../components/SpinWheel";
 import { useRouter } from "next/navigation";
 
 // Default challenge labels
@@ -33,13 +33,9 @@ const segmentColors = [
   "#eccc68",
 ];
 
-export default function DesktopPage() {
+export default function HostPage() {
   const [peer, setPeer] = useState<Peer | null>(null);
   const [peerId, setPeerId] = useState("");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isConnected, setIsConnected] = useState(false);
-  const [connectedPhones, setConnectedPhones] = useState<DataConnection[]>([]); // Store multiple connections
-
   const [selectedChallenge, setSelectedChallenge] = useState<string | null>(
     null
   );
@@ -48,10 +44,16 @@ export default function DesktopPage() {
   const [spinCount, setSpinCount] = useState(10); // Default number of spins
   const [isEditChallenges, setIsEditChallenges] = useState(false); // Default number of spins
   const [challenges, setChallenges] = useState<string[]>(defaultChallenges);
-  const [phoneIds, setPhoneIds] = useState<string[]>([]); // Store Peer IDs of phones
   const [gameStarted, setGameStarted] = useState(false);
   const phoneHeartbeats = useRef<{ [key: string]: number }>({});
-  const [currentSpinner, setCurrentSpinner] = useState<string | null>("host"); // Store who started the spin
+  const [currentSpinner, setCurrentSpinner] = useState<{
+    id: string;
+    nickname: string;
+    connection: DataConnection;
+  } | null>(null); // Store who started the spin
+  const [players, setPlayers] = useState<
+    { id: string; nickname: string; connection: DataConnection }[]
+  >([]);
 
   const router = useRouter();
 
@@ -68,56 +70,46 @@ export default function DesktopPage() {
 
       newPeer.on("open", (id) => {
         setPeerId(id);
-        console.log("✅ Desktop Peer ID:", id);
+        console.log("✅ Host Peer ID:", id);
       });
 
       newPeer.on("connection", (conn) => {
         console.log(`📲 Phone connected: ${conn.peer}`);
 
-        // Store multiple phone connections
-        setConnectedPhones((prevPhones) => {
-          // Prevent duplicate entries
-          if (!prevPhones.some((p) => p.peer === conn.peer)) {
-            return [...prevPhones, conn];
-          }
-          return prevPhones;
-        });
-
-        setPhoneIds((prevIds) => {
-          if (!prevIds.includes(conn.peer)) {
-            return [...prevIds, conn.peer];
-          }
-          return prevIds;
-        });
-
-        setIsConnected(true);
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         conn.on("data", (data: any) => {
           if (data.gesture === "swipe" && !startSpin) {
-            initiateSpin(data.force, conn.peer);
+            initiateSpin(data.force);
           }
           if (data.event === "heartbeat") {
             phoneHeartbeats.current[conn.peer] = Date.now();
+          }
+
+          if (data.event === "join") {
+            // Add player (if not already in list)
+            setPlayers((prev) => {
+              if (!prev.some((p) => p.id === data.peerId)) {
+                return [
+                  ...prev,
+                  {
+                    id: data.peerId,
+                    nickname: data.nickname,
+                    connection: conn,
+                  },
+                ];
+              }
+              return prev;
+            });
           }
         });
 
         conn.on("close", () => {
           console.warn(`⚠️ Connection closed: ${conn.peer}`);
-
-          // Remove disconnected phone from state
-          setConnectedPhones((prevPhones) =>
-            prevPhones.filter((p) => p.peer !== conn.peer)
-          );
-          setPhoneIds((prevIds) => prevIds.filter((id) => id !== conn.peer));
+          setPlayers((prev) => prev.filter((p) => p.id !== conn.peer));
         });
 
         conn.on("error", () => {
           console.error(`❌ Connection error with: ${conn.peer}`);
-          setConnectedPhones((prevPhones) =>
-            prevPhones.filter((p) => p.peer !== conn.peer)
-          );
-          setPhoneIds((prevIds) => prevIds.filter((id) => id !== conn.peer));
+          setPlayers((prev) => prev.filter((p) => p.id !== conn.peer));
         });
       });
 
@@ -133,46 +125,53 @@ export default function DesktopPage() {
     }
   }, [peer, router, startSpin]);
 
-  const initiateSpin = (force: number, peerId?: string) => {
-    console.log("peerId", peerId);
-    if (peerId) {
-      setCurrentSpinner(peerId); // Store the peer ID of the phone that triggered the spin
-    }
-
+  const initiateSpin = (force: number) => {
     console.log("Force:", force);
     setSpinTime(3000 + force * 500); // Adjust spin time based on force
     setSpinCount(5 + Math.floor(force * 3)); // More force = more spins
     setStartSpin(true);
 
-    connectedPhones.forEach((conn) => {
-      if (conn.open) {
-        conn.send({ event: "spinStarted" });
+    players.forEach((player) => {
+      if (player.connection.open) {
+        player.connection.send({ event: "spinStarted" });
       }
     });
   };
 
-  const handleSpinCompleted = (option: string, isHost: boolean) => {
+  const handleSpinCompleted = (
+    option: string,
+    isHost: boolean,
+    payerId: string | null
+  ) => {
     setSelectedChallenge(option);
     setStartSpin(false);
     console.log("currentSpinner", currentSpinner);
+    console.log("isHost", isHost);
     if (isHost) {
-      // If the desktop triggered the spin, send the result to all phones
-      connectedPhones.forEach((conn) => {
-        if (conn.open) {
-          conn.send({ event: "spinResult", result: option });
-        }
-      });
+      // If the host triggered the spin, send the result to the payer
+      const targetPlayer = players.find((player) => player.id === payerId);
+      console.log("targetPlayer", targetPlayer, payerId);
+      if (targetPlayer && targetPlayer.connection.open) {
+        targetPlayer.connection.send({ event: "spinResult", result: option });
+      }
     } else {
-      // If a specific phone swiped, send result only to that phone
-      const targetPhone = connectedPhones.find(
-        (conn) => conn.peer === currentSpinner
+      // If a specific payer swiped, send result only to that payer
+      const targetPlayer = players.find(
+        (player) => player.id === currentSpinner?.id
       );
-      if (targetPhone && targetPhone.open) {
-        targetPhone.send({ event: "spinResult", result: option });
+      if (targetPlayer && targetPlayer.connection.open) {
+        targetPlayer.connection.send({ event: "spinResult", result: option });
       }
     }
 
     setCurrentSpinner(null); // Reset spinner ID after spin is done
+  };
+
+  const handleSpinStart = (
+    spinner: { id: string; nickname: string; connection: DataConnection } | null
+  ) => {
+    console.log("Spin start for:", spinner);
+    setCurrentSpinner(spinner);
   };
 
   const handleEditChallenge = (index: number, newValue: string) => {
@@ -184,6 +183,14 @@ export default function DesktopPage() {
     localStorage.setItem("customChallenges", JSON.stringify(updatedChallenges));
   };
 
+  const startGame = () => {
+    setGameStarted(true);
+    players.forEach((player) => {
+      if (player.connection.open) {
+        player.connection.send({ event: "gameStarted" });
+      }
+    });
+  };
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white overflow-hidden">
       {peerId ? (
@@ -227,28 +234,30 @@ export default function DesktopPage() {
             )}
           </div>
           <div className="flex justify-center flex-col items-center">
-            {!gameStarted && phoneIds.length > 0 && (
+            {!gameStarted && players.length > 0 && (
               <button
                 className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg"
-                onClick={() => {
-                  setGameStarted(true);
-                  connectedPhones.forEach((conn) =>
-                    conn.send({ event: "gameStarted" })
-                  );
-                }}
+                onClick={() => startGame()}
               >
                 Start Game
               </button>
             )}
             <div className="flex flex-col">
-              <h2 className="text-lg font-semibold mb-2 mt-2">
+              <h2 className="text-sm font-semibold mb-2 mt-2">
                 Players Online:
               </h2>
-              {phoneIds.length > 0 ? (
+              {players.length > 0 ? (
                 <ul>
-                  {phoneIds.map((id, index) => (
-                    <li key={index} className="text-green-400">
-                      {id}
+                  {players.map((player, index) => (
+                    <li
+                      key={index}
+                      className={`px-1 py-1 text-green-400 text-xs ${
+                        player.id === currentSpinner?.id
+                          ? "border-1 border-white rounded-[4px]"
+                          : ""
+                      }`}
+                    >
+                      {player.nickname} ({player.id})
                     </li>
                   ))}
                 </ul>
@@ -258,15 +267,20 @@ export default function DesktopPage() {
             </div>
             {!gameStarted && (
               <>
-                <h1 className="text-2xl">Scan QR Code to Join</h1>
-
                 <QRCodeSVG
                   value={`https://drunk-wheel-challenge.vercel.app/phone?peerId=${peerId}`}
                   size={200}
                   className="mt-4"
                 />
-                <p className="mt-4">Or enter this ID manually:</p>
-                <p className="text-lg font-bold">{peerId}</p>
+                <h1 className="mt-2 text-xl">Scan QR Code to Join</h1>
+                <p className="mt-2">Or enter this ID manually:</p>
+                <p className="text-base font-bold">{peerId}</p>
+                <button
+                  onClick={() => navigator.clipboard.writeText(peerId)}
+                  className="mt-2 px-4 w-[200px] py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg"
+                >
+                  copy to clipboard
+                </button>
               </>
             )}
             {/* Spin Wheel */}
@@ -279,6 +293,9 @@ export default function DesktopPage() {
                   spinCount={spinCount}
                   onFinished={handleSpinCompleted}
                   startSpin={startSpin}
+                  players={players}
+                  onSpinStart={handleSpinStart}
+                  currentSpinner={currentSpinner}
                 />
 
                 <h2 className="mt-[70px] text-xl text-center">
@@ -289,15 +306,21 @@ export default function DesktopPage() {
             {gameStarted && (
               <button
                 onClick={() => setGameStarted(false)}
-                className="mt-4 px-6 py-2 cursor-pointer bg-orange-400 hover:bg-green-600 text-white font-bold rounded-lg"
+                className="mt-4 px-4 py-2 cursor-pointer w-[200px] bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg"
               >
-                Back to Home
+                Back to QR
               </button>
             )}
+            <button
+              onClick={() => router.push("/")}
+              className="mt-4 px-4 py-2 cursor-pointer w-[200px] bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg"
+            >
+              Back to Home
+            </button>
           </div>
         </>
       ) : (
-        <p>Generating Peer ID...</p>
+        <p>Generating ID...</p>
       )}
     </div>
   );

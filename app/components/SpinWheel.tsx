@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import { DataConnection } from "peerjs";
 
 interface SpinWheelProps {
   segments: string[]; // List of challenge texts
@@ -8,7 +9,16 @@ interface SpinWheelProps {
   spinTime: number; // Dynamic spin time
   spinCount: number; // Number of spins before stopping
   startSpin: boolean; // Trigger spinning
-  onFinished: (winner: string, isHost: boolean) => void; // Callback when spin stops
+  onFinished: (winner: string, isHost: boolean, payerId: string | null) => void; // Callback when spin stops
+  players: { id: string; nickname: string; connection: DataConnection }[];
+  currentSpinner: {
+    id: string;
+    nickname: string;
+    connection: DataConnection;
+  } | null;
+  onSpinStart: (
+    spinner: { id: string; nickname: string; connection: DataConnection } | null
+  ) => void;
 }
 
 export default function SpinWheel({
@@ -17,7 +27,10 @@ export default function SpinWheel({
   spinTime,
   spinCount,
   startSpin,
+  players,
   onFinished,
+  onSpinStart,
+  currentSpinner,
 }: SpinWheelProps) {
   const wheelContainerRef = useRef<HTMLDivElement | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -31,48 +44,66 @@ export default function SpinWheel({
     }
   }, [startSpin]);
 
-  const spinWheel = (isHost: boolean) => {
+  const spinWheel = async (isHost: boolean) => {
     console.log("Spinning...");
     if (isSpinning) return;
     setIsSpinning(true);
+    if (isHost && players.length > 0) {
+      for (const player of players) {
+        onSpinStart(player);
+        await triggerSpinForPlayer(player.id, isHost);
+      }
+    } else {
+      onSpinStart(currentSpinner);
+      await triggerSpinForPlayer(null, isHost);
+    }
+  };
 
-    // 🔹 Generate a random stop position ensuring alignment with the red pointer
-    const extraRotation = Math.random() * segmentSize; // Random final stop within a segment
-    const totalRotation = spinCount * 360 + extraRotation;
+  const triggerSpinForPlayer = async (
+    playerId: string | null,
+    isHost: boolean
+  ): Promise<void> => {
+    return new Promise((resolve) => {
+      // 🔹 Generate a random stop position ensuring alignment with the red pointer
+      const extraRotation = Math.random() * segmentSize; // Random final stop within a segment
+      const totalRotation = spinCount * 360 + extraRotation;
 
-    gsap.to(wheelContainerRef.current, {
-      rotation: `+=${totalRotation}`,
-      duration: spinTime / 1000,
-      ease: "power4.out",
-      onComplete: () => {
-        setIsSpinning(false);
+      gsap.to(wheelContainerRef.current, {
+        rotation: `+=${totalRotation}`,
+        duration: spinTime / 1000,
+        ease: "power4.out",
+        onComplete: () => {
+          setIsSpinning(false);
 
-        // ✅ Get the exact angle where the wheel stopped
-        const finalAngle = (currentAngle + totalRotation) % 360;
-        const adjustedAngle = (360 - finalAngle + segmentSize / 2) % 360; // Align with red pointer
-        const winningIndex = Math.floor(adjustedAngle / segmentSize);
+          // ✅ Get the exact angle where the wheel stopped
+          const finalAngle = (currentAngle + totalRotation) % 360;
+          const adjustedAngle = (360 - finalAngle + segmentSize / 2) % 360; // Align with red pointer
+          const winningIndex = Math.floor(adjustedAngle / segmentSize);
 
-        console.log(
-          "🎯 Winning Index:",
-          winningIndex,
-          "Segment:",
-          segments[winningIndex]
-        );
+          console.log(
+            "🎯 Winning Index:",
+            winningIndex,
+            "Segment:",
+            segments[winningIndex]
+          );
 
-        // ✅ Ensure correct result is sent
-        let calIndex = 0;
-        if (winningIndex < 3) {
-          calIndex = winningIndex + (segments.length - 3);
-        } else {
-          calIndex = winningIndex - (segments.length - 7);
-        }
+          // ✅ Ensure correct result is sent
+          let calIndex = 0;
+          if (winningIndex < 3) {
+            calIndex = winningIndex + (segments.length - 3);
+          } else {
+            calIndex = winningIndex - (segments.length - 7);
+          }
 
-        console.log("Calculated Index:", calIndex);
-        onFinished(segments[calIndex], isHost);
+          console.log("Calculated Index:", calIndex);
+          onFinished(segments[calIndex], isHost, playerId);
 
-        // ✅ Store the new stopping angle
-        setCurrentAngle(finalAngle);
-      },
+          // ✅ Store the new stopping angle
+          setCurrentAngle(finalAngle);
+
+          resolve();
+        },
+      });
     });
   };
 
