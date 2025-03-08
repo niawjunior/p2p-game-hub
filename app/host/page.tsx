@@ -78,6 +78,12 @@ export default function HostPage() {
 
         conn.on("data", (data: any) => {
           if (data.gesture === "swipe" && !startSpin) {
+            const spinner = {
+              id: conn.peer,
+              nickname: data.nickname,
+              connection: conn,
+            };
+            setCurrentSpinner(spinner);
             initiateSpin(data.force);
           }
           if (data.event === "heartbeat") {
