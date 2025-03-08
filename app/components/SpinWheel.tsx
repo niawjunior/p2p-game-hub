@@ -39,6 +39,8 @@ export default function SpinWheel({
   const segmentSize = 360 / segments.length; // Each segment size
   const wheelSize = 300; // Set wheel size
   const [isShowFireworks, setIsShowFireworks] = useState(false);
+  const audioCtx = useRef<AudioContext | null>(null);
+  const tickInterval = useRef<any | null>(null);
 
   useEffect(() => {
     if (startSpin && !isSpinning) {
@@ -66,6 +68,71 @@ export default function SpinWheel({
     }
   };
 
+  const playTickingSound = (
+    time: number,
+    frequency: number = 800,
+    volume: number = 0.1
+  ) => {
+    if (!audioCtx.current) {
+      audioCtx.current = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
+    }
+
+    const osc = audioCtx.current.createOscillator();
+    const gainNode = audioCtx.current.createGain();
+
+    osc.type = "triangle"; // More organic "click" sound
+    osc.frequency.setValueAtTime(frequency, audioCtx.current.currentTime);
+    gainNode.gain.setValueAtTime(volume, audioCtx.current.currentTime);
+
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.current.destination);
+
+    osc.start();
+    setTimeout(() => {
+      osc.stop();
+    }, time);
+
+    // Decay effect for more natural sound
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.0001,
+      audioCtx.current.currentTime + time / 1000
+    );
+  };
+
+  const startTickingSound = (duration: number) => {
+    if (tickInterval.current) clearInterval(tickInterval.current as any);
+
+    const startTime = Date.now();
+    let tickIntervalMs = 50; // Start fast
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    let tickCount = 0;
+
+    const tickLoop = () => {
+      const elapsed = Date.now() - startTime;
+      if (elapsed >= duration) {
+        clearInterval(tickInterval.current as any);
+        playTickingSound(100, 200, 0.2); // Final "thump" when wheel stops
+        return;
+      }
+
+      // Adjust tick frequency & volume dynamically
+      const progress = elapsed / duration; // 0 (start) → 1 (end)
+      const frequency = 800 - progress * 500; // Start high-pitched, end lower
+      const volume = Math.max(0.15 - progress * 0.1, 0.02); // Start loud, fade out
+
+      playTickingSound(50, frequency, volume);
+
+      // Dynamically adjust next tick timing
+      tickIntervalMs = 50 + progress * 200; // Slows down smoothly
+      tickCount++;
+
+      tickInterval.current = setTimeout(tickLoop, tickIntervalMs);
+    };
+
+    tickInterval.current = setTimeout(tickLoop, tickIntervalMs);
+  };
+
   const handleCloseFireworks = () => {
     setTimeout(() => {
       setIsShowFireworks(false);
@@ -83,13 +150,16 @@ export default function SpinWheel({
         ? spinCount * 360 + extraRotation + Math.random() * 100
         : spinCount * 360 + extraRotation;
 
+      startTickingSound(spinTime); // Adjusted to match spinCount
+
       gsap.to(wheelContainerRef.current, {
         rotation: `+=${totalRotation}`,
         duration: spinTime / 1000,
         ease: "power4.out",
         onComplete: () => {
           setIsSpinning(false);
-
+          clearTimeout(tickInterval.current as any);
+          tickInterval.current = null;
           // ✅ Get the exact angle where the wheel stopped
           const finalAngle = (currentAngle + totalRotation) % 360;
           const adjustedAngle = (360 - finalAngle + segmentSize / 2) % 360; // Align with red pointer
