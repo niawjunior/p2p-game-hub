@@ -272,7 +272,7 @@ export default function HostPage() {
             )}
             <div className="flex flex-col items-center">
               <h2 className="text-sm font-semibold mb-2 mt-2">
-                Players Online:
+                Players Online: {players.length}
               </h2>
               {players.length > 0 ? (
                 <ul>
