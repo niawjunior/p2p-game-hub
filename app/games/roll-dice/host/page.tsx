@@ -192,12 +192,12 @@ export default function HostPage() {
                     force={rollingForce}
                     onRollComplete={handleDiceRollComplete}
                   />
-                  {/* <button
+                  <button
                     onClick={() => setRollingForce(Math.random())}
                     className="cursor-pointer px-6 py-2 mt-4 bg-blue-500 text-white rounded-lg"
                   >
                     Roll Dice
-                  </button> */}
+                  </button>
                   <p className="text-xl">
                     {diceResult || "Swipe on Phone to Roll!"}
                   </p>

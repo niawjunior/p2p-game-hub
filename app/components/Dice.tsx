@@ -12,6 +12,7 @@ interface DiceProps {
 export default function Dice({ force, onRollComplete }: DiceProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const diceBodyRef = useRef<CANNON.Body | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [rolling, setRolling] = useState(false);
 
   useEffect(() => {
@@ -135,16 +136,20 @@ export default function Dice({ force, onRollComplete }: DiceProps) {
 
   /** 📌 Apply Force When Player Swipes */
   useEffect(() => {
-    if (force > 0 && !rolling && diceBodyRef.current) {
+    if (force > 0 && diceBodyRef.current) {
       console.log("Applying force:", force);
+
+      // 🛑 Reset dice state before rolling
       setRolling(true);
       const diceBody = diceBodyRef.current;
 
-      // Clear any previous rolling detection interval
-      let rollingCheck: number | null = null;
+      // ✅ Reset dice velocity and position before rolling
+      diceBody.velocity.set(0, 0, 0);
+      diceBody.angularVelocity.set(0, 0, 0);
+      diceBody.position.set(0, 5, 0); // Move it to starting position
 
-      // 💥 Apply a more powerful force
-      const forcePlusExtra = force * 10; // Increased from 20 → 30
+      // 💥 Apply a new force
+      const forcePlusExtra = force * 10;
       diceBody.velocity.set(
         (Math.random() - 0.5) * forcePlusExtra,
         8 + Math.random() * 3, // Higher upward force
@@ -157,7 +162,8 @@ export default function Dice({ force, onRollComplete }: DiceProps) {
         (Math.random() - 0.5) * forcePlusExtra
       );
 
-      // ✅ Using requestAnimationFrame for better physics sync
+      // ✅ Using requestAnimationFrame to detect when dice stops
+      let rollingCheck: number | null = null;
       const checkDiceStopped = () => {
         const velocity = diceBody.velocity.length();
         const angularVelocity = diceBody.angularVelocity.length();
@@ -173,7 +179,7 @@ export default function Dice({ force, onRollComplete }: DiceProps) {
 
       rollingCheck = requestAnimationFrame(checkDiceStopped);
 
-      // Cleanup function: Remove stale animation frames
+      // Cleanup: Cancel previous animation frames to prevent overlapping rolls
       return () => {
         if (rollingCheck) cancelAnimationFrame(rollingCheck);
       };
@@ -194,7 +200,7 @@ export default function Dice({ force, onRollComplete }: DiceProps) {
       new CANNON.Vec3(0, 0, -1), // Back
     ];
 
-    const faceOrder = [1, 5, 4, 3, 2, 6]; // ✅ Corrected mapping
+    const faceOrder = [5, 1, 4, 3, 2, 6]; // ✅ Corrected mapping
 
     let bestFace = 1;
     let maxDot = -Infinity;
