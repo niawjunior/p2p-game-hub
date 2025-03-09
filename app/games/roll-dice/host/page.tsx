@@ -198,7 +198,7 @@ export default function HostPage() {
                   >
                     Roll Dice
                   </button> */}
-                  <p className="text-xl mt-4">
+                  <p className="text-xl">
                     {diceResult || "Swipe on Phone to Roll!"}
                   </p>
                 </div>

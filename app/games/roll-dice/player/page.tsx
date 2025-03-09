@@ -57,11 +57,11 @@ export default function PhonePage() {
       });
 
       connection.on("data", (data: any) => {
-        if (data.event === "spinStarted") {
-          console.log("🎡 Spin started!");
+        if (data.event === "gameStarted") {
+          console.log("🎡 Game started!");
         }
-        if (data.event === "spinResult") {
-          console.log("🏆 Spin result:", data.result);
+        if (data.event === "diceResult") {
+          console.log("🏆 Dice result:", data.result);
           setResult(data.result);
         }
 
