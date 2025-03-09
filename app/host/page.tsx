@@ -231,30 +231,32 @@ export default function HostPage() {
                 {/* Editable Challenge List */}
                 <div className="mb-4 mt-4 px-4">
                   <button
-                    className="px-4 absolute top-4 right-4 py-2 bg-green-500 z-2 hover:bg-green-600 transition text-white font-semibold rounded-lg"
+                    className="px-4 absolute  top-4 right-4 py-2 bg-green-500 z-2 hover:bg-green-600 transition text-white font-semibold rounded-lg"
                     onClick={() => setIsEditChallenges(!isEditChallenges)}
                   >
                     Edit Challenges
                   </button>
                   {isEditChallenges && (
-                    <div className="absolute h-[70vh]  top-16 right-4 bg-gray-800 px-4 py-8 rounded-lg">
-                      <button
-                        onClick={() => setIsEditChallenges(false)}
-                        className="absolute top-0 text-2xl right-4 text-gray-300 hover:text-white transition"
-                      >
-                        x
-                      </button>
-                      {challenges.map((challenge, index) => (
-                        <input
-                          key={index}
-                          type="text"
-                          value={challenge}
-                          onChange={(e) =>
-                            handleEditChallenge(index, e.target.value)
-                          }
-                          className="w-full px-3 py-1 mb-2 text-white text-center rounded border border-gray-300 focus:outline-none"
-                        />
-                      ))}
+                    <div className="flex justify-center items-center absolute top-[60px]">
+                      <div className="absolute h-[70vh] w-[90vw] lg:max-w-md top-16 bg-gray-800 px-4 py-8 rounded-lg mx-auto">
+                        <button
+                          onClick={() => setIsEditChallenges(false)}
+                          className="absolute top-0 text-2xl right-4 text-gray-300 hover:text-white transition"
+                        >
+                          x
+                        </button>
+                        {challenges.map((challenge, index) => (
+                          <input
+                            key={index}
+                            type="text"
+                            value={challenge}
+                            onChange={(e) =>
+                              handleEditChallenge(index, e.target.value)
+                            }
+                            className="w-full px-3 py-1 mb-2 text-white text-center rounded border border-gray-300 focus:outline-none"
+                          />
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>

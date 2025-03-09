@@ -114,13 +114,14 @@ export default function PhonePage() {
     }
   };
   useEffect(() => {
+    if (!isConnected) return;
     document.addEventListener("touchstart", handleTouchStart);
     document.addEventListener("touchend", handleTouchEnd);
     return () => {
       document.removeEventListener("touchstart", handleTouchStart);
       document.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [conn]);
+  }, [conn, isConnected]);
 
   const handleBackToHome = () => {
     // close connection
