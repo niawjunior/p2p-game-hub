@@ -113,7 +113,7 @@ export default function HostPage() {
     });
   };
   const startDiceRoll = (force: number) => {
-    setRollingForce(force + Math.random());
+    setRollingForce(force + (Math.random() - 0.7));
   };
 
   const handleDiceRollComplete = (result: number) => {
