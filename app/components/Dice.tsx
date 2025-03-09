@@ -23,8 +23,9 @@ export default function Dice({ force, onRollComplete }: DiceProps) {
     }
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
-    camera.position.set(0, 2, 3); // Move camera up and back to see full dice
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1000);
+    camera.position.set(0, 3, 5); // Move camera up and back to see full dice
+    camera.lookAt(new THREE.Vector3(0, 1, 0)); // Ensure it looks at the dice
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(400, 400);
@@ -106,12 +107,12 @@ export default function Dice({ force, onRollComplete }: DiceProps) {
       if (diceBodyRef.current) {
         const dicePos = diceBodyRef.current.position;
 
-        // ✅ Keep dice inside the visible area
-        dicePos.x = Math.max(-1.5, Math.min(1.5, dicePos.x));
-        dicePos.z = Math.max(-1.5, Math.min(1.5, dicePos.z));
-        dicePos.y = Math.max(0.5, dicePos.y); // Prevent sinking
+        // ✅ Constrain dice inside a small area (prevent escaping)
+        dicePos.x = Math.max(-1, Math.min(1, dicePos.x));
+        dicePos.z = Math.max(-1, Math.min(1, dicePos.z));
+        dicePos.y = Math.max(0.5, dicePos.y); // Prevent sinking below ground
 
-        // ✅ Update camera to follow the dice
+        // ✅ Keep camera always looking at the dice
         const dicePosition = new THREE.Vector3(dicePos.x, dicePos.y, dicePos.z);
         camera.position.set(
           dicePosition.x,
