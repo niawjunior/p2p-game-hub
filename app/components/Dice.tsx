@@ -102,6 +102,25 @@ export default function Dice({ force, onRollComplete }: DiceProps) {
     const animate = () => {
       requestAnimationFrame(animate);
       world.step(1 / 60);
+
+      if (diceBodyRef.current) {
+        const dicePos = diceBodyRef.current.position;
+
+        // ✅ Keep dice inside the visible area
+        dicePos.x = Math.max(-1.5, Math.min(1.5, dicePos.x));
+        dicePos.z = Math.max(-1.5, Math.min(1.5, dicePos.z));
+        dicePos.y = Math.max(0.5, dicePos.y); // Prevent sinking
+
+        // ✅ Update camera to follow the dice
+        const dicePosition = new THREE.Vector3(dicePos.x, dicePos.y, dicePos.z);
+        camera.position.set(
+          dicePosition.x,
+          dicePosition.y + 2,
+          dicePosition.z + 3
+        );
+        camera.lookAt(dicePosition);
+      }
+
       diceMesh.position.copy(diceBody.position);
       diceMesh.quaternion.copy(diceBody.quaternion);
       renderer.render(scene, camera);
