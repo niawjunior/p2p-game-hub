@@ -136,7 +136,7 @@ export default function Dice({ force, onRollComplete }: DiceProps) {
   /** 📌 Apply Force When Player Swipes */
   useEffect(() => {
     if (force > 0 && !rolling && diceBodyRef.current) {
-      const randomForce = (Math.random() - 0.5) * force;
+      const randomForce = (Math.random() - 0.5) * force * 5;
       setRolling(true);
       const diceBody = diceBodyRef.current;
 

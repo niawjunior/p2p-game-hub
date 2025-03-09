@@ -193,7 +193,7 @@ export default function HostPage() {
                     onRollComplete={handleDiceRollComplete}
                   />
                   {/* <button
-                    onClick={() => handleSwipe(Math.random() * 10)}
+                    onClick={() => setRollingForce(Math.random() * 10)}
                     className="px-6 py-2 mt-4 bg-blue-500 text-white rounded-lg"
                   >
                     Roll Dice
