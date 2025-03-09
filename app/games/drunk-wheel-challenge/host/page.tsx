@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Peer, { DataConnection } from "peerjs";
 import { QRCodeSVG } from "qrcode.react";
 import SpinWheel from "../../../components/SpinWheel";
@@ -45,7 +45,6 @@ export default function HostPage() {
   const [isEditChallenges, setIsEditChallenges] = useState(false); // Default number of spins
   const [challenges, setChallenges] = useState<string[]>(defaultChallenges);
   const [gameStarted, setGameStarted] = useState(false);
-  const phoneHeartbeats = useRef<{ [key: string]: number }>({});
 
   const [currentSpinner, setCurrentSpinner] = useState<{
     id: string;
@@ -97,9 +96,6 @@ export default function HostPage() {
             };
             setCurrentSpinner(spinner);
             initiateSpin(data.force);
-          }
-          if (data.event === "heartbeat") {
-            phoneHeartbeats.current[conn.peer] = Date.now();
           }
 
           if (data.event === "join") {

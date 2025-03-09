@@ -11,12 +11,12 @@ const games = [
     playerPath: "/games/drunk-wheel-challenge/player",
   },
   {
-    id: "coming-soon-1",
-    name: "Coming Soon!",
-    description: "A new P2P game is on the way...",
+    id: "roll-dice",
+    name: "Roll Dice",
+    description: "Roll the dice and take a challenge!",
     icon: "🎲",
-    hostPath: "#",
-    playerPath: "#",
+    hostPath: "/games/roll-dice/host",
+    playerPath: "/games/roll-dice/player",
   },
 ];
 
