@@ -136,23 +136,16 @@ export default function Dice({ force, onRollComplete }: DiceProps) {
   /** 📌 Apply Force When Player Swipes */
   useEffect(() => {
     if (force > 0 && !rolling && diceBodyRef.current) {
-      const diceBody = diceBodyRef.current;
+      const forcePlusExtra = force * 20;
       setRolling(true);
+      const diceBody = diceBodyRef.current;
 
-      // ✅ Stronger Random Impulse to Make Dice Jump
-      const randomForce = (Math.random() - 0.5) * force * 5;
-      const upwardForce = 10 + Math.random() * 5; // Increase height force
-
-      diceBody.velocity.set(
-        (Math.random() - 0.5) * force * 3, // Horizontal movement
-        upwardForce, // 🔥 Stronger upward jump
-        (Math.random() - 0.5) * force * 3 // Depth movement
-      );
-
+      // Apply random impulse based on swipe force
+      diceBody.velocity.set(0, 5, 0); // Upwards force
       diceBody.angularVelocity.set(
-        randomForce * 2, // Faster spin
-        randomForce * 2,
-        randomForce * 2
+        forcePlusExtra,
+        forcePlusExtra,
+        forcePlusExtra
       );
 
       setTimeout(() => {
