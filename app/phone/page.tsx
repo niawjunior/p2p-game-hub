@@ -114,14 +114,14 @@ export default function PhonePage() {
     }
   };
   useEffect(() => {
-    if (!isConnected) return;
+    if (!isGameStarted) return;
     document.addEventListener("touchstart", handleTouchStart);
     document.addEventListener("touchend", handleTouchEnd);
     return () => {
       document.removeEventListener("touchstart", handleTouchStart);
       document.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [conn, isConnected]);
+  }, [conn, isGameStarted]);
 
   const handleBackToHome = () => {
     // close connection
