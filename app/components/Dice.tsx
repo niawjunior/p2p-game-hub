@@ -144,7 +144,7 @@ export default function Dice({ force, onRollComplete }: DiceProps) {
       let rollingCheck: number | null = null;
 
       // 💥 Apply a more powerful force
-      const forcePlusExtra = force * 30; // Increased from 20 → 30
+      const forcePlusExtra = force * 10; // Increased from 20 → 30
       diceBody.velocity.set(
         (Math.random() - 0.5) * forcePlusExtra,
         8 + Math.random() * 3, // Higher upward force
