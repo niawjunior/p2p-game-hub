@@ -102,22 +102,6 @@ export default function Dice({ force, onRollComplete }: DiceProps) {
     const animate = () => {
       requestAnimationFrame(animate);
       world.step(1 / 60);
-
-      if (diceBodyRef.current) {
-        const dicePos = diceBodyRef.current.position;
-
-        // Convert CANNON.Vec3 to THREE.Vector3
-        const dicePosition = new THREE.Vector3(dicePos.x, dicePos.y, dicePos.z);
-
-        // Update camera to always follow the dice
-        camera.position.set(
-          dicePosition.x,
-          dicePosition.y + 2,
-          dicePosition.z + 3
-        );
-        camera.lookAt(dicePosition);
-      }
-
       diceMesh.position.copy(diceBody.position);
       diceMesh.quaternion.copy(diceBody.quaternion);
       renderer.render(scene, camera);
@@ -132,33 +116,18 @@ export default function Dice({ force, onRollComplete }: DiceProps) {
   /** 📌 Apply Force When Player Swipes */
   useEffect(() => {
     if (force > 0 && !rolling && diceBodyRef.current) {
+      const randomForce = (Math.random() - 0.7) * force;
       setRolling(true);
       const diceBody = diceBodyRef.current;
 
-      // Slightly stronger force
-      const impulseStrength = force * 10; // Increased from 8 → 10
-      const spinStrength = force * 15; // Increased from 12 → 15
-
-      diceBody.applyImpulse(
-        new CANNON.Vec3(
-          (Math.random() - 0.5) * impulseStrength, // Random X impulse
-          impulseStrength, // Stronger upward impulse
-          (Math.random() - 0.5) * impulseStrength // Random Z impulse
-        ),
-        new CANNON.Vec3(0, 0, 0) // Apply impulse from center
-      );
-
-      // Apply stronger spin
-      diceBody.angularVelocity.set(
-        (Math.random() - 0.5) * spinStrength,
-        (Math.random() - 0.5) * spinStrength,
-        (Math.random() - 0.5) * spinStrength
-      );
+      // Apply random impulse based on swipe force
+      diceBody.velocity.set(0, 5, 0); // Upwards force
+      diceBody.angularVelocity.set(randomForce, randomForce, randomForce);
 
       setTimeout(() => {
         detectDiceFace(diceBody);
         setRolling(false);
-      }, 2500); // Keeping the roll duration the same
+      }, 2000); // Simulate roll time
     }
   }, [force]);
 
