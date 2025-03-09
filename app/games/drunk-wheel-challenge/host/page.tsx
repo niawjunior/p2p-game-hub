@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import Peer, { DataConnection } from "peerjs";
 import { QRCodeSVG } from "qrcode.react";
-import SpinWheel from "../components/SpinWheel";
+import SpinWheel from "../../../components/SpinWheel";
 import { useRouter } from "next/navigation";
 
 // Default challenge labels
@@ -298,7 +298,7 @@ export default function HostPage() {
             {!gameStarted && (
               <>
                 <QRCodeSVG
-                  value={`https://drunk-wheel-challenge.vercel.app/phone?peerId=${peerId}`}
+                  value={`https://drunk-wheel-challenge.vercel.app/games/drunk-wheel-challenge/player?peerId=${peerId}`}
                   size={200}
                   className="mt-4"
                 />

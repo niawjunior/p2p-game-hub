@@ -9,8 +9,8 @@ const kanit = Kanit({
 });
 
 export const metadata: Metadata = {
-  title: "Drunk Challenge Game",
-  description: "A fun game to challenge your friends to take a drink!",
+  title: "P2P Games Hub",
+  description: "A fun P2P game hub",
 };
 
 export default function RootLayout({
