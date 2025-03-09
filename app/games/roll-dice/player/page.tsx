@@ -131,7 +131,7 @@ export default function PhonePage() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-900 overflow-hidden text-white">
-      <h1 className="text-2xl">🎲 Roll Dice 🎲</h1>
+      <h1 className="text-2xl">🎲 Roll Dice Game 🎲</h1>
 
       {peerId ? (
         <>
