@@ -188,10 +188,10 @@ export default function PhonePage() {
           {isConnected && isGameStarted && (
             <>
               <p className="text-green-500 mt-4">
-                ✅ Connected! Swipe up to spin!
+                ✅ Connected! Swipe up to roll!
               </p>
               <p className="text-purple-600 mt-4">
-                Or waiting for the host to spin
+                Or waiting for the host to roll
               </p>
             </>
           )}
