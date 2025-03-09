@@ -113,7 +113,7 @@ export default function HostPage() {
     });
   };
   const startDiceRoll = (force: number) => {
-    setRollingForce(force);
+    setRollingForce(force + Math.random());
   };
 
   const handleDiceRollComplete = (result: number) => {
@@ -194,7 +194,7 @@ export default function HostPage() {
                   />
                   {/* <button
                     onClick={() => setRollingForce(Math.random())}
-                    className="px-6 py-2 mt-4 bg-blue-500 text-white rounded-lg"
+                    className="cursor-pointer px-6 py-2 mt-4 bg-blue-500 text-white rounded-lg"
                   >
                     Roll Dice
                   </button> */}

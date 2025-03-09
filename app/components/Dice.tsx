@@ -136,39 +136,65 @@ export default function Dice({ force, onRollComplete }: DiceProps) {
   /** 📌 Apply Force When Player Swipes */
   useEffect(() => {
     if (force > 0 && !rolling && diceBodyRef.current) {
-      const forcePlusExtra = force * 20;
+      console.log("Applying force:", force);
       setRolling(true);
       const diceBody = diceBodyRef.current;
 
-      // Apply random impulse based on swipe force
-      diceBody.velocity.set(0, 5, 0); // Upwards force
-      diceBody.angularVelocity.set(
-        forcePlusExtra,
-        forcePlusExtra,
-        forcePlusExtra
+      // Clear any previous rolling detection interval
+      let rollingCheck: number | null = null;
+
+      // 💥 Apply a more powerful force
+      const forcePlusExtra = force * 30; // Increased from 20 → 30
+      diceBody.velocity.set(
+        (Math.random() - 0.5) * forcePlusExtra,
+        8 + Math.random() * 3, // Higher upward force
+        (Math.random() - 0.5) * forcePlusExtra
       );
 
-      setTimeout(() => {
-        detectDiceFace(diceBody);
-        setRolling(false);
-      }, 2000); // Simulate roll time
+      diceBody.angularVelocity.set(
+        (Math.random() - 0.5) * forcePlusExtra,
+        (Math.random() - 0.5) * forcePlusExtra,
+        (Math.random() - 0.5) * forcePlusExtra
+      );
+
+      // ✅ Using requestAnimationFrame for better physics sync
+      const checkDiceStopped = () => {
+        const velocity = diceBody.velocity.length();
+        const angularVelocity = diceBody.angularVelocity.length();
+
+        if (velocity < 0.1 && angularVelocity < 0.1) {
+          console.log("✅ Dice stopped moving.");
+          detectDiceFace(diceBody);
+          setRolling(false);
+        } else {
+          rollingCheck = requestAnimationFrame(checkDiceStopped);
+        }
+      };
+
+      rollingCheck = requestAnimationFrame(checkDiceStopped);
+
+      // Cleanup function: Remove stale animation frames
+      return () => {
+        if (rollingCheck) cancelAnimationFrame(rollingCheck);
+      };
     }
   }, [force]);
 
   /** 📌 Detect Final Face of Dice */
   /** 📌 Detect Final Face of Dice - Accurate Alignment */
   const detectDiceFace = (diceBody: CANNON.Body) => {
+    console.log("Dice stopped moving");
     const upVector = new CANNON.Vec3(0, 1, 0); // Upward direction
     const faceNormals = [
-      new CANNON.Vec3(0, 0, 1), // Face 1 (Front)
-      new CANNON.Vec3(1, 0, 0), // Face 2 (Right)
-      new CANNON.Vec3(0, -1, 0), // Face 3 (Bottom)
-      new CANNON.Vec3(0, 1, 0), // Face 4 (Top)
-      new CANNON.Vec3(-1, 0, 0), // Face 5 (Left)
-      new CANNON.Vec3(0, 0, -1), // Face 6 (Back)
+      new CANNON.Vec3(0, 0, 1), // Front
+      new CANNON.Vec3(1, 0, 0), // Right
+      new CANNON.Vec3(0, -1, 0), // Bottom
+      new CANNON.Vec3(0, 1, 0), // Top
+      new CANNON.Vec3(-1, 0, 0), // Left
+      new CANNON.Vec3(0, 0, -1), // Back
     ];
 
-    const faceOrder = [5, 1, 4, 3, 2, 6]; // Reordered faces to match physics
+    const faceOrder = [1, 5, 4, 3, 2, 6]; // ✅ Corrected mapping
 
     let bestFace = 1;
     let maxDot = -Infinity;
@@ -179,7 +205,7 @@ export default function Dice({ force, onRollComplete }: DiceProps) {
 
       if (dot > maxDot) {
         maxDot = dot;
-        bestFace = faceOrder[index]; // Ensure correct face mapping
+        bestFace = faceOrder[index]; // ✅ Ensure correct face mapping
       }
     });
 
