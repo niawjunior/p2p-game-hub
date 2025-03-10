@@ -225,6 +225,7 @@ export default function HostPage() {
   const handleSingleMode = () => {
     setPlayers([]);
     peer?.disconnect();
+    closeConnection();
     router.push("/games/drunk-wheel-challenge/host?mode=single");
   };
   return (

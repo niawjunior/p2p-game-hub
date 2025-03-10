@@ -151,6 +151,7 @@ export default function HostPage() {
   const handleSingleMode = () => {
     setPlayers([]);
     peer?.disconnect();
+    closeConnection();
     router.push("/games/roll-dice/host?mode=single");
   };
 
