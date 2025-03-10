@@ -324,7 +324,7 @@ export default function HostPage() {
                 </h2>
               </div>
             )}
-            {gameStarted && (
+            {gameStarted && !isSinglePlayer && (
               <button
                 onClick={() => setGameStarted(false)}
                 className="mt-4 px-4 py-2 cursor-pointer w-full bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg"
