@@ -148,6 +148,16 @@ export default function HostPage() {
     }, 1000);
   };
 
+  const handleRollDice = () => {
+    let speed = Math.random() * 2;
+
+    const randomVariation = (Math.random() - 0.5) * 1;
+    speed = Math.max(1, Math.min(10, speed + randomVariation)); // Ensure it stays between 1 and 10
+
+    console.log(`🎲 Roll Dice! Speed: ${speed}`);
+
+    setRollingForce(speed);
+  };
   const handleSingleMode = () => {
     setPlayers([]);
     peer?.disconnect();
@@ -221,7 +231,7 @@ export default function HostPage() {
                   />
                   {players.length === 0 && isSinglePlayer && (
                     <button
-                      onClick={() => setRollingForce(Math.random())}
+                      onClick={() => handleRollDice()}
                       className="cursor-pointer px-6 py-2 mt-4 bg-blue-500 text-white rounded-lg"
                     >
                       Roll Dice
