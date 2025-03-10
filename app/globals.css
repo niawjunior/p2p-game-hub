@@ -19,3 +19,7 @@ html {
 * {
   font-family: "Kanit" !important;
 }
+
+button {
+  cursor: pointer;
+}

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Peer, { DataConnection } from "peerjs";
 import { QRCodeSVG } from "qrcode.react";
 import SpinWheel from "../../../components/SpinWheel";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 // Default challenge labels
 const defaultChallenges = [
@@ -45,7 +45,8 @@ export default function HostPage() {
   const [isEditChallenges, setIsEditChallenges] = useState(false); // Default number of spins
   const [challenges, setChallenges] = useState<string[]>(defaultChallenges);
   const [gameStarted, setGameStarted] = useState(false);
-
+  const searchParams = useSearchParams();
+  const isSinglePlayer = searchParams.get("mode") === "single";
   const [currentSpinner, setCurrentSpinner] = useState<{
     id: string;
     nickname: string;
@@ -68,6 +69,11 @@ export default function HostPage() {
     }
   };
 
+  useEffect(() => {
+    if (isSinglePlayer) {
+      setGameStarted(true);
+    }
+  }, [isSinglePlayer]);
   useEffect(() => {
     // Load saved challenges from localStorage
     const savedChallenges = localStorage.getItem("customChallenges");
@@ -156,23 +162,13 @@ export default function HostPage() {
     });
   };
 
-  const handleSpinCompleted = (
-    option: string,
-    isHost: boolean,
-    payerId: string | null
-  ) => {
+  const handleSpinCompleted = (option: string, payerId: string | null) => {
     setSelectedChallenge(option);
     setStartSpin(false);
+    console.log(payerId);
     console.log("currentSpinner", currentSpinner);
-    console.log("isHost", isHost);
-    if (isHost) {
-      // If the host triggered the spin, send the result to the payer
-      const targetPlayer = players.find((player) => player.id === payerId);
-      console.log("targetPlayer", targetPlayer, payerId);
-      if (targetPlayer && targetPlayer.connection.open) {
-        targetPlayer.connection.send({ event: "spinResult", result: option });
-      }
-    } else {
+
+    if (payerId) {
       // If a specific payer swiped, send result only to that payer
       const targetPlayer = players.find(
         (player) => player.id === currentSpinner?.id
@@ -259,7 +255,7 @@ export default function HostPage() {
               </>
             )}
           </div>
-          <div className="flex justify-center flex-col items-center">
+          <div className="flex justify-center flex-col items-center ">
             {!gameStarted && players.length > 0 && (
               <button
                 className="px-6 py-2 bg-blue-500 cursor-pointer hover:bg-blue-600 text-white font-bold rounded-lg"
@@ -305,7 +301,7 @@ export default function HostPage() {
                   onClick={() => navigator.clipboard.writeText(peerId)}
                   className="mt-2 px-4 w-full py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg"
                 >
-                  Copy to clipboard
+                  Copy to Clipboard
                 </button>
               </>
             )}
@@ -319,7 +315,6 @@ export default function HostPage() {
                   spinCount={spinCount}
                   onFinished={handleSpinCompleted}
                   startSpin={startSpin}
-                  players={players}
                   onSpinStart={handleSpinStart}
                   currentSpinner={currentSpinner}
                 />
@@ -335,6 +330,16 @@ export default function HostPage() {
                 className="mt-4 px-4 py-2 cursor-pointer w-full bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg"
               >
                 Back to QR
+              </button>
+            )}
+            {!gameStarted && (
+              <button
+                onClick={() =>
+                  router.push("/games/drunk-wheel-challenge/host?mode=single")
+                }
+                className="mt-4 px-4 py-2 cursor-pointer w-full bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-lg"
+              >
+                Play without Players
               </button>
             )}
             <button

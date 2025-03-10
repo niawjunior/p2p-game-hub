@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Peer, { DataConnection } from "peerjs";
 import { QRCodeSVG } from "qrcode.react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Dice from "@/app/components/Dice";
 
 export default function HostPage() {
@@ -12,7 +12,8 @@ export default function HostPage() {
   const [gameStarted, setGameStarted] = useState(false);
   const [rollingForce, setRollingForce] = useState(0);
   const [diceResult, setDiceResult] = useState<number | null>(null);
-
+  const searchParams = useSearchParams();
+  const isSinglePlayer = searchParams.get("mode") === "single";
   const [currentPlayer, setCurrentPlayer] = useState<{
     id: string;
     nickname: string;
@@ -23,6 +24,12 @@ export default function HostPage() {
   >([]);
 
   const router = useRouter();
+
+  useEffect(() => {
+    if (isSinglePlayer) {
+      setGameStarted(true);
+    }
+  }, [isSinglePlayer]);
 
   const closeConnection = () => {
     if (players.length > 0) {
@@ -181,13 +188,13 @@ export default function HostPage() {
                   onClick={() => navigator.clipboard.writeText(peerId)}
                   className="mt-2 px-4 w-full py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg"
                 >
-                  Copy to clipboard
+                  Copy to Clipboard
                 </button>
               </>
             )}
             {gameStarted && (
               <>
-                <div className="mt-4 flex flex-col items-center ">
+                <div className="mt-4 flex flex-col items-center min-w-[300px]">
                   <Dice
                     force={rollingForce}
                     onRollComplete={handleDiceRollComplete}
@@ -198,7 +205,7 @@ export default function HostPage() {
                   >
                     Roll Dice
                   </button>
-                  <p className="text-xl">
+                  <p className="text-xl py-2">
                     {diceResult || "Swipe on Phone to Roll!"}
                   </p>
                 </div>
@@ -207,9 +214,17 @@ export default function HostPage() {
             {gameStarted && (
               <button
                 onClick={() => setGameStarted(false)}
-                className="mt-4 px-4 py-2 cursor-pointer w-full bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg"
+                className=" px-4 py-2 cursor-pointer w-full bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg"
               >
                 Back to QR
+              </button>
+            )}
+            {!gameStarted && (
+              <button
+                onClick={() => router.push("/games/roll-dice/host?mode=single")}
+                className="mt-4 px-4 py-2 cursor-pointer w-full bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-lg"
+              >
+                Play without Players
               </button>
             )}
             <button

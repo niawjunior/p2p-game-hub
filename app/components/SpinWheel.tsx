@@ -10,8 +10,7 @@ interface SpinWheelProps {
   spinTime: number; // Dynamic spin time
   spinCount: number; // Number of spins before stopping
   startSpin: boolean; // Trigger spinning
-  onFinished: (winner: string, isHost: boolean, payerId: string | null) => void; // Callback when spin stops
-  players: { id: string; nickname: string; connection: DataConnection }[];
+  onFinished: (winner: string, payerId: string | null) => void; // Callback when spin stops
   currentSpinner: {
     id: string;
     nickname: string;
@@ -28,7 +27,6 @@ export default function SpinWheel({
   spinTime,
   spinCount,
   startSpin,
-  players,
   onFinished,
   onSpinStart,
   currentSpinner,
@@ -44,28 +42,20 @@ export default function SpinWheel({
 
   useEffect(() => {
     if (startSpin && !isSpinning) {
-      spinWheel(false);
+      spinWheel();
     }
   }, [startSpin]);
 
-  const spinWheel = async (isHost: boolean) => {
+  const spinWheel = async () => {
     setIsShowFireworks(false);
     console.log("Spinning...");
     if (isSpinning) return;
     setIsSpinning(true);
-    if (isHost && players.length > 0) {
-      for (const player of players) {
-        onSpinStart(player);
-        await triggerSpinForPlayer(player.id, isHost);
-        setIsShowFireworks(true);
-        handleCloseFireworks();
-      }
-    } else {
-      onSpinStart(currentSpinner);
-      await triggerSpinForPlayer(null, isHost);
-      setIsShowFireworks(true);
-      handleCloseFireworks();
-    }
+
+    onSpinStart(currentSpinner);
+    await triggerSpinForPlayer(null);
+    setIsShowFireworks(true);
+    handleCloseFireworks();
   };
 
   const playTickingSound = (
@@ -140,15 +130,13 @@ export default function SpinWheel({
   };
 
   const triggerSpinForPlayer = async (
-    playerId: string | null,
-    isHost: boolean
+    playerId: string | null
   ): Promise<void> => {
     return new Promise((resolve) => {
       // 🔹 Generate a random stop position ensuring alignment with the red pointer
       const extraRotation = Math.random() * segmentSize; // Random final stop within a segment
-      const totalRotation = isHost
-        ? spinCount * 360 + extraRotation + Math.random() * 100
-        : spinCount * 360 + extraRotation;
+      const totalRotation =
+        spinCount * 360 + extraRotation + Math.random() * 100;
 
       startTickingSound(spinTime); // Adjusted to match spinCount
 
@@ -181,7 +169,7 @@ export default function SpinWheel({
           }
 
           console.log("Calculated Index:", calIndex);
-          onFinished(segments[calIndex], isHost, playerId);
+          onFinished(segments[calIndex], playerId);
 
           // ✅ Store the new stopping angle
           setCurrentAngle(finalAngle);
@@ -234,7 +222,7 @@ export default function SpinWheel({
                       fontFamily="Kanit"
                       textAnchor="middle"
                       transform={`rotate(${
-                        midAngle + 180
+                        midAngle + 184
                       }, ${textX}, ${textY})`} // Rotate properly
                     >
                       {segments[index]}
@@ -253,7 +241,7 @@ export default function SpinWheel({
 
         <button
           className="mt-6 absolute bottom-[-60px] bg-blue-500 hover:bg-blue-600 transition cursor-pointer text-white font-semibold rounded-lg px-6 py-2"
-          onClick={() => spinWheel(true)}
+          onClick={() => spinWheel()}
         >
           Spin
         </button>

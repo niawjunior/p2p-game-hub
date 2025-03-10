@@ -175,6 +175,18 @@ export default function PhonePage() {
                 {isConnecting ? "Connecting..." : "Connect"}
               </button>
             )}
+
+            {!isConnected && (
+              <button
+                onClick={() =>
+                  router.push("/games/drunk-wheel-challenge/host?mode=single")
+                }
+                className="mt-4 px-4 py-2 cursor-pointer w-full bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-lg"
+              >
+                Play without Host
+              </button>
+            )}
+
             <button
               onClick={() => handleBackToHome()}
               className="mt-4 px-4 py-2 cursor-pointer w-full bg-indigo-400 hover:bg-indigo-600 text-white font-bold rounded-lg"
