@@ -71,6 +71,10 @@ export default function PhonePage() {
         if (data.event === "gameStarted") {
           console.log("🎡 Game started!");
         }
+        if (data.event === "gameStopped") {
+          console.log("🛑 Game stopped!");
+          setIsGameStarted(false);
+        }
         if (data.event === "diceResult") {
           console.log("🏆 Dice result:", data.result);
           setResult(data.result);

@@ -138,13 +138,11 @@ export default function HostPage() {
       newPeer.on("disconnected", () => {
         closeConnection();
         console.warn("⚠️ Peer disconnected! Redirecting...");
-        window.location.href = "/";
       });
 
       newPeer.on("error", () => {
         console.error("❌ Peer error! Redirecting...");
         closeConnection();
-        window.location.href = "/"; // Redirect on peer error
       });
     }
   }, [peer, router, startSpin]);
@@ -206,13 +204,29 @@ export default function HostPage() {
     });
   };
 
+  const handleStopGame = () => {
+    setGameStarted(false);
+    players.forEach((player) => {
+      if (player.connection.open) {
+        player.connection.send({ event: "gameStopped" });
+      }
+    });
+  };
+
   const handleBackToHome = () => {
     // close connection
     peer?.disconnect();
     closeConnection();
-    router.push("/");
+    setTimeout(() => {
+      router.push("/");
+    }, 1000);
   };
 
+  const handleSingleMode = () => {
+    setPlayers([]);
+    peer?.disconnect();
+    router.push("/games/drunk-wheel-challenge/host?mode=single");
+  };
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white overflow-hidden">
       <h1 className="text-xl ">🍻 Drunk Challenge Game 🎉</h1>
@@ -330,17 +344,15 @@ export default function HostPage() {
             )}
             {gameStarted && !isSinglePlayer && (
               <button
-                onClick={() => setGameStarted(false)}
+                onClick={() => handleStopGame()}
                 className="mt-4 px-4 py-2 cursor-pointer w-full bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg"
               >
-                Back to QR
+                Stop Game
               </button>
             )}
             {!gameStarted && (
               <button
-                onClick={() =>
-                  router.push("/games/drunk-wheel-challenge/host?mode=single")
-                }
+                onClick={() => handleSingleMode()}
                 className="mt-4 px-4 py-2 cursor-pointer w-full bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-lg"
               >
                 Play without Players

@@ -100,13 +100,11 @@ export default function HostPage() {
       newPeer.on("disconnected", () => {
         closeConnection();
         console.warn("⚠️ Peer disconnected! Redirecting...");
-        window.location.href = "/";
       });
 
       newPeer.on("error", () => {
         console.error("❌ Peer error! Redirecting...");
         closeConnection();
-        window.location.href = "/"; // Redirect on peer error
       });
     }
   }, [peer, router]);
@@ -116,6 +114,16 @@ export default function HostPage() {
     players.forEach((player) => {
       if (player.connection.open) {
         player.connection.send({ event: "gameStarted" });
+      }
+    });
+  };
+
+  const handleStopGame = () => {
+    setRollingForce(0);
+    setGameStarted(false);
+    players.forEach((player) => {
+      if (player.connection.open) {
+        player.connection.send({ event: "gameStopped" });
       }
     });
   };
@@ -135,7 +143,15 @@ export default function HostPage() {
     // close connection
     peer?.disconnect();
     closeConnection();
-    router.push("/");
+    setTimeout(() => {
+      router.push("/");
+    }, 1000);
+  };
+
+  const handleSingleMode = () => {
+    setPlayers([]);
+    peer?.disconnect();
+    router.push("/games/roll-dice/host?mode=single");
   };
 
   return (
@@ -202,12 +218,14 @@ export default function HostPage() {
                     force={rollingForce}
                     onRollComplete={handleDiceRollComplete}
                   />
-                  <button
-                    onClick={() => setRollingForce(Math.random())}
-                    className="cursor-pointer px-6 py-2 mt-4 bg-blue-500 text-white rounded-lg"
-                  >
-                    Roll Dice
-                  </button>
+                  {players.length === 0 && (
+                    <button
+                      onClick={() => setRollingForce(Math.random())}
+                      className="cursor-pointer px-6 py-2 mt-4 bg-blue-500 text-white rounded-lg"
+                    >
+                      Roll Dice
+                    </button>
+                  )}
                   <p className="text-xl py-2">
                     {diceResult || "Swipe on Phone to Roll!"}
                   </p>
@@ -216,15 +234,15 @@ export default function HostPage() {
             )}
             {gameStarted && !isSinglePlayer && (
               <button
-                onClick={() => setGameStarted(false)}
+                onClick={() => handleStopGame()}
                 className=" px-4 py-2 cursor-pointer w-full bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg"
               >
-                Back to QR
+                Stop Game
               </button>
             )}
             {!gameStarted && (
               <button
-                onClick={() => router.push("/games/roll-dice/host?mode=single")}
+                onClick={() => handleSingleMode()}
                 className="mt-4 px-4 py-2 cursor-pointer w-full bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-lg"
               >
                 Play without Players

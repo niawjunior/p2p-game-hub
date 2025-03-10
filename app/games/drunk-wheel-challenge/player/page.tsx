@@ -81,6 +81,10 @@ export default function PhonePage() {
           console.log("🎮 Game started!");
           setIsGameStarted(true);
         }
+        if (data.event === "gameStopped") {
+          console.log("🛑 Game stopped!");
+          setIsGameStarted(false);
+        }
       });
 
       connection.on("close", () => {
