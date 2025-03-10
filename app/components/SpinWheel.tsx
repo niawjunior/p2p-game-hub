@@ -247,7 +247,7 @@ export default function SpinWheel({
             className="mt-6 absolute bottom-[-60px] bg-blue-500 hover:bg-blue-600 transition cursor-pointer text-white font-semibold rounded-lg px-6 py-2"
             onClick={() => spinWheel()}
           >
-            Spin
+            🎡 Spin
           </button>
         )}
       </div>
