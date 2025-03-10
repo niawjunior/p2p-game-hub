@@ -133,6 +133,7 @@ export default function HostPage() {
 
   const handleBackToHome = () => {
     // close connection
+    peer?.disconnect();
     closeConnection();
     router.push("/");
   };

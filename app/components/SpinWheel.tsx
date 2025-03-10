@@ -16,6 +16,7 @@ interface SpinWheelProps {
     nickname: string;
     connection: DataConnection;
   } | null;
+  players: { id: string; nickname: string; connection: DataConnection }[];
   onSpinStart: (
     spinner: { id: string; nickname: string; connection: DataConnection } | null
   ) => void;
@@ -30,6 +31,7 @@ export default function SpinWheel({
   onFinished,
   onSpinStart,
   currentSpinner,
+  players,
 }: SpinWheelProps) {
   const wheelContainerRef = useRef<HTMLDivElement | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -238,13 +240,14 @@ export default function SpinWheel({
         <div className="absolute top-0 flex justify-center items-center">
           <div className="w-0 h-0 border-l-8 border-r-8 border-b-16 border-transparent border-b-red-500"></div>
         </div>
-
-        <button
-          className="mt-6 absolute bottom-[-60px] bg-blue-500 hover:bg-blue-600 transition cursor-pointer text-white font-semibold rounded-lg px-6 py-2"
-          onClick={() => spinWheel()}
-        >
-          Spin
-        </button>
+        {players.length === 0 && (
+          <button
+            className="mt-6 absolute bottom-[-60px] bg-blue-500 hover:bg-blue-600 transition cursor-pointer text-white font-semibold rounded-lg px-6 py-2"
+            onClick={() => spinWheel()}
+          >
+            Spin
+          </button>
+        )}
       </div>
       {isShowFireworks && <Fireworks autorun={{ speed: 3 }} />}
     </>

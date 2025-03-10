@@ -208,6 +208,7 @@ export default function HostPage() {
 
   const handleBackToHome = () => {
     // close connection
+    peer?.disconnect();
     closeConnection();
     router.push("/");
   };
@@ -319,6 +320,7 @@ export default function HostPage() {
                   startSpin={startSpin}
                   onSpinStart={handleSpinStart}
                   currentSpinner={currentSpinner}
+                  players={players}
                 />
 
                 <h2 className="mt-[70px] text-xl text-center">

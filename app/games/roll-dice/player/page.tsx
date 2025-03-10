@@ -13,7 +13,7 @@ export default function PhonePage() {
   const [result, setResult] = useState<string | null>(null);
   const [isGameStarted, setIsGameStarted] = useState(false);
   const [nickname, setNickname] = useState<string>(""); // User-entered nickname
-
+  const [isError, setIsError] = useState(false);
   const router = useRouter();
 
   let touchStartY = 0;
@@ -43,7 +43,18 @@ export default function PhonePage() {
       setIsConnecting(true);
       const connection = peer.connect(hostId);
 
+      const connectionTimeout = setTimeout(() => {
+        console.warn("⚠️ Connection timeout! Host might be offline.");
+        connection.close(); // Ensure connection is closed if stuck
+        setIsConnecting(false);
+        setIsConnected(false);
+        setIsGameStarted(false);
+        setIsError(true);
+      }, 5000); // Wait max 5 seconds
+
       connection.on("open", () => {
+        clearTimeout(connectionTimeout);
+        setIsError(false);
         console.log("✅ Connected!");
         setConn(connection);
         setIsConnected(true);
@@ -73,12 +84,14 @@ export default function PhonePage() {
 
       connection.on("close", () => {
         console.warn("⚠️ connection closed! Redirecting...");
-        window.location.href = "/"; // Redirect to home if connection is lost
+        setIsConnected(false);
+        setIsGameStarted(false);
       });
 
       connection.on("error", () => {
         console.error("❌ Connection error! Redirecting...");
-        window.location.href = "/"; // Redirect to home if connection fails
+        setIsConnected(false);
+        setIsGameStarted(false);
       });
     }
   };
@@ -192,6 +205,11 @@ export default function PhonePage() {
           </div>
           {isConnected && !isGameStarted && (
             <p className="text-green-500 mt-4">Waiting for game to start...</p>
+          )}
+          {!isConnected && isError && (
+            <p className="text-red-500 mt-4">
+              Failed to connect: Host is not responding.
+            </p>
           )}
           {isConnected && isGameStarted && (
             <>
