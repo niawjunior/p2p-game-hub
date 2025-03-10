@@ -290,7 +290,7 @@ export default function HostPage() {
             {!gameStarted && (
               <>
                 <QRCodeSVG
-                  value={`https://drunk-wheel-challenge.vercel.app/games/drunk-wheel-challenge/player?peerId=${peerId}`}
+                  value={`https://p2p-game-hub.vercel.app/games/drunk-wheel-challenge/player?peerId=${peerId}`}
                   size={200}
                   className="mt-4"
                 />
