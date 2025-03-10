@@ -219,7 +219,7 @@ export default function HostPage() {
                     force={rollingForce}
                     onRollComplete={handleDiceRollComplete}
                   />
-                  {players.length === 0 && (
+                  {players.length === 0 && isSinglePlayer && (
                     <button
                       onClick={() => setRollingForce(Math.random())}
                       className="cursor-pointer px-6 py-2 mt-4 bg-blue-500 text-white rounded-lg"

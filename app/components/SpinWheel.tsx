@@ -17,6 +17,7 @@ interface SpinWheelProps {
     connection: DataConnection;
   } | null;
   players: { id: string; nickname: string; connection: DataConnection }[];
+  isSinglePlayer: boolean;
   onSpinStart: (
     spinner: { id: string; nickname: string; connection: DataConnection } | null
   ) => void;
@@ -31,6 +32,7 @@ export default function SpinWheel({
   onFinished,
   onSpinStart,
   currentSpinner,
+  isSinglePlayer,
   players,
 }: SpinWheelProps) {
   const wheelContainerRef = useRef<HTMLDivElement | null>(null);
@@ -240,7 +242,7 @@ export default function SpinWheel({
         <div className="absolute top-0 flex justify-center items-center">
           <div className="w-0 h-0 border-l-8 border-r-8 border-b-16 border-transparent border-b-red-500"></div>
         </div>
-        {players.length === 0 && (
+        {players.length === 0 && isSinglePlayer && (
           <button
             className="mt-6 absolute bottom-[-60px] bg-blue-500 hover:bg-blue-600 transition cursor-pointer text-white font-semibold rounded-lg px-6 py-2"
             onClick={() => spinWheel()}

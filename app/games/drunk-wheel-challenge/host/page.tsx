@@ -336,6 +336,7 @@ export default function HostPage() {
                   onSpinStart={handleSpinStart}
                   currentSpinner={currentSpinner}
                   players={players}
+                  isSinglePlayer={isSinglePlayer}
                 />
 
                 <h2 className="mt-[70px] text-xl text-center">

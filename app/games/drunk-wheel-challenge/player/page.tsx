@@ -213,7 +213,9 @@ export default function PhonePage() {
             </button>
           </div>
           {isConnected && !isGameStarted && (
-            <p className="text-green-500 mt-4">Waiting for game to start...</p>
+            <p className="text-green-500 mt-4">
+              ⏳ Waiting for game to start...
+            </p>
           )}
           {isError && (
             <p className="text-red-500 mt-4">
