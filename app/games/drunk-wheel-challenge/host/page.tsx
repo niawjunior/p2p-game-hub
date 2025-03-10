@@ -264,29 +264,31 @@ export default function HostPage() {
                 Start Game
               </button>
             )}
-            <div className="flex flex-col items-center">
-              <h2 className="text-sm font-semibold mb-2 mt-2">
-                Players Online: {players.length}
-              </h2>
-              {players.length > 0 ? (
-                <ul>
-                  {players.map((player, index) => (
-                    <li
-                      key={index}
-                      className={`px-1 py-1 text-green-400 text-xs ${
-                        player.id === currentSpinner?.id
-                          ? "border-1 border-white rounded-[4px]"
-                          : ""
-                      }`}
-                    >
-                      {player.nickname} ({player.id})
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-400">Waiting for players...</p>
-              )}
-            </div>
+            {!isSinglePlayer && (
+              <div className="flex flex-col items-center">
+                <h2 className="text-sm font-semibold mb-2 mt-2">
+                  Players Online: {players.length}
+                </h2>
+                {players.length > 0 ? (
+                  <ul>
+                    {players.map((player, index) => (
+                      <li
+                        key={index}
+                        className={`px-1 py-1 text-green-400 text-xs ${
+                          player.id === currentSpinner?.id
+                            ? "border-1 border-white rounded-[4px]"
+                            : ""
+                        }`}
+                      >
+                        {player.nickname} ({player.id})
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-400">Waiting for players...</p>
+                )}
+              </div>
+            )}
             {!gameStarted && (
               <>
                 <QRCodeSVG
