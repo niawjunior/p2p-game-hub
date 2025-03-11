@@ -252,7 +252,7 @@ export default function HostPage() {
                       <div className="absolute h-fit w-[90vw] lg:max-w-md top-16 bg-gray-800 px-4 py-12 rounded-lg mx-auto">
                         <button
                           onClick={() => setIsEditChallenges(false)}
-                          className="absolute top-2 text-sm w-[30px] h-[30px] rounded-full bg-red-500 right-4 text-white transition"
+                          className="absolute font-semibold top-2 text-xs w-[40px] h-[30px] rounded-sm bg-red-400 right-4 text-white transition"
                         >
                           Close
                         </button>
