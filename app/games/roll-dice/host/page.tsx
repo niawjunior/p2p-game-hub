@@ -4,11 +4,22 @@ import Peer, { DataConnection } from "peerjs";
 import { QRCodeSVG } from "qrcode.react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Dice from "@/app/components/Dice";
+import Image from "next/image";
+
+const defaultChallenges = [
+  "ดื่ม 2 ช็อต 🍻",
+  "หมุนอีกครั้ง!",
+  "เลือกคนอื่นให้ดื่ม 🍷",
+  "วิดพื้น 10 ครั้ง 💪",
+  "เล่าเรื่องตลก 🎤",
+  "ดื่มโดยไม่ใช้มือ! 🙌",
+];
 
 export default function HostPage() {
   const [peer, setPeer] = useState<Peer | null>(null);
   const [peerId, setPeerId] = useState("");
-
+  const [isEditChallenges, setIsEditChallenges] = useState(false); // Default number of spins
+  const [challenges, setChallenges] = useState<string[]>(defaultChallenges);
   const [gameStarted, setGameStarted] = useState(false);
   const [rollingForce, setRollingForce] = useState(0);
   const [diceResult, setDiceResult] = useState<number | null>(null);
@@ -43,6 +54,11 @@ export default function HostPage() {
   };
 
   useEffect(() => {
+    // Load saved challenges from localStorage
+    const savedChallenges = localStorage.getItem("rollDiceChallenges");
+    if (savedChallenges) {
+      setChallenges(JSON.parse(savedChallenges));
+    }
     if (!peer) {
       const newPeer = new Peer();
       setPeer(newPeer);
@@ -109,6 +125,18 @@ export default function HostPage() {
     }
   }, [peer, router]);
 
+  const handleEditChallenge = (index: number, newValue: string) => {
+    const updatedChallenges = [...challenges];
+    updatedChallenges[index] = newValue;
+    setChallenges(updatedChallenges);
+
+    // Save updated challenges to localStorage
+    localStorage.setItem(
+      "rollDiceChallenges",
+      JSON.stringify(updatedChallenges)
+    );
+  };
+
   const startGame = () => {
     setGameStarted(true);
     players.forEach((player) => {
@@ -135,7 +163,10 @@ export default function HostPage() {
     setDiceResult(result);
 
     if (currentPlayer) {
-      currentPlayer.connection.send({ event: "diceResult", result });
+      currentPlayer.connection.send({
+        event: "diceResult",
+        result: `${result} (${challenges[result - 1]})`,
+      });
     }
   };
 
@@ -170,6 +201,55 @@ export default function HostPage() {
       <h1 className="text-xl mb-4">🎲 Roll Dice Game 🎲</h1>
       {peerId ? (
         <>
+          <div>
+            {(!gameStarted || isSinglePlayer) && (
+              <>
+                {/* Editable Challenge List */}
+                <div className="mb-4 mt-4 px-4">
+                  <button
+                    className="px-4 absolute  top-4 right-4 py-2 bg-green-500 z-2 hover:bg-green-600 transition text-white font-semibold rounded-lg"
+                    onClick={() => setIsEditChallenges(!isEditChallenges)}
+                  >
+                    Edit Challenges
+                  </button>
+                  {isEditChallenges && (
+                    <div className="flex justify-center items-center absolute z-2 top-[60px]">
+                      <div className="absolute h-fit w-[90vw] lg:max-w-md top-16 bg-gray-800 px-4 py-12 rounded-lg mx-auto">
+                        <button
+                          onClick={() => setIsEditChallenges(false)}
+                          className="absolute top-2 text-sm w-[30px] h-[30px] rounded-full bg-red-500 right-4 text-white transition"
+                        >
+                          ปิด
+                        </button>
+                        {challenges.map((challenge, index) => (
+                          <div key={index} className="flex gap-2 items-center">
+                            <div className="text-white text-xs">
+                              <Image
+                                src={`/textures/dice${index + 1}.png`}
+                                width={20}
+                                height={20}
+                                alt="dice"
+                              />
+                            </div>
+                            <input
+                              key={index}
+                              type="text"
+                              value={challenge}
+                              onChange={(e) =>
+                                handleEditChallenge(index, e.target.value)
+                              }
+                              className="w-full px-3 py-1 mb-2 text-white text-center rounded border border-gray-300 focus:outline-none"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
           <div className="flex justify-center flex-col items-center">
             {!gameStarted && players.length > 0 && (
               <button
@@ -237,8 +317,11 @@ export default function HostPage() {
                       Roll Dice
                     </button>
                   )}
-                  <p className="text-xl py-2">
-                    {diceResult || "Swipe on Phone to Roll!"}
+                  <p className="text-xl flex gap-2 py-2">
+                    <span>{diceResult || "Swipe on Phone to Roll!"}</span>
+                    <span>
+                      {diceResult && `(${challenges[diceResult - 1]})`}
+                    </span>
                   </p>
                 </div>
               </>

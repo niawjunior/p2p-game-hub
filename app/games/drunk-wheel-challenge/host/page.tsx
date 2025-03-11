@@ -76,7 +76,7 @@ export default function HostPage() {
   }, [isSinglePlayer]);
   useEffect(() => {
     // Load saved challenges from localStorage
-    const savedChallenges = localStorage.getItem("customChallenges");
+    const savedChallenges = localStorage.getItem("drunkWheelChallenges");
     if (savedChallenges) {
       setChallenges(JSON.parse(savedChallenges));
     }
@@ -192,7 +192,10 @@ export default function HostPage() {
     setChallenges(updatedChallenges);
 
     // Save updated challenges to localStorage
-    localStorage.setItem("customChallenges", JSON.stringify(updatedChallenges));
+    localStorage.setItem(
+      "drunkWheelChallenges",
+      JSON.stringify(updatedChallenges)
+    );
   };
 
   const startGame = () => {
@@ -234,7 +237,7 @@ export default function HostPage() {
       {peerId ? (
         <>
           <div>
-            {!gameStarted && (
+            {(!gameStarted || isSinglePlayer) && (
               <>
                 {/* Editable Challenge List */}
                 <div className="mb-4 mt-4 px-4">
@@ -245,13 +248,13 @@ export default function HostPage() {
                     Edit Challenges
                   </button>
                   {isEditChallenges && (
-                    <div className="flex justify-center items-center absolute top-[60px]">
-                      <div className="absolute h-[70vh] w-[90vw] lg:max-w-md top-16 bg-gray-800 px-4 py-8 rounded-lg mx-auto">
+                    <div className="flex justify-center items-center absolute z-2 top-[60px]">
+                      <div className="absolute h-fit w-[90vw] lg:max-w-md top-16 bg-gray-800 px-4 py-12 rounded-lg mx-auto">
                         <button
                           onClick={() => setIsEditChallenges(false)}
-                          className="absolute top-0 text-2xl right-4 text-gray-300 hover:text-white transition"
+                          className="absolute top-2 text-sm w-[30px] h-[30px] rounded-full bg-red-500 right-4 text-white transition"
                         >
-                          x
+                          ปิด
                         </button>
                         {challenges.map((challenge, index) => (
                           <input
