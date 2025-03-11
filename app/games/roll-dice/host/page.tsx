@@ -219,7 +219,7 @@ export default function HostPage() {
                           onClick={() => setIsEditChallenges(false)}
                           className="absolute top-2 text-sm w-[30px] h-[30px] rounded-full bg-red-500 right-4 text-white transition"
                         >
-                          ปิด
+                          Close
                         </button>
                         {challenges.map((challenge, index) => (
                           <div key={index} className="flex gap-2 items-center">
